@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation"
+    app:startDestination="@id/dest_map_fragment">
+
+    <fragment
+        android:id="@+id/dest_map_fragment"
+        android:name="edu.rutgers.knighttransporter.MapFragment"
+        android:label="@string/map_fragment_title"
+        tools:layout="@layout/fragment_map">
+        <action
+            android:id="@+id/action_map_fragment_to_settings_fragment"
+            app:destination="@id/dest_settings_fragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/dest_settings_fragment"
+        android:name="edu.rutgers.knighttransporter.SettingsFragment"
+        android:label="@string/settings"
+        tools:layout="@layout/fragment_settings" />
+</navigation>
