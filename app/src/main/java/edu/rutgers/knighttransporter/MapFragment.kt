@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -88,6 +89,20 @@ class MapFragment : Fragment() {
 
         mapView.onCreate(mapViewModel.mapInstanceState)
         mapView.getMapAsync { mapboxMap ->
+            mapboxMap.addOnMapClickListener { latLng ->
+                val point = mapboxMap.projection.toScreenLocation(latLng)
+                val features =
+                    mapboxMap.queryRenderedFeatures(point, "rBuildings-layer", "rParkingLots-layer")
+                if (features.size > 1) {
+                    Toast.makeText(context, "${features.size} items at this point", Toast.LENGTH_LONG).show()
+                }
+                for (feature in features) {
+                    val name = features.first()?.properties()?.get("BldgName")?.asString
+                        ?: features.first()?.properties()?.get("Lot_Name")?.asString ?: "No name"
+                    AlertDialog.Builder(context!!).setMessage(name).show()
+                }
+                features.isNotEmpty()
+            }
             this.mapboxMap = mapboxMap
             mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
                 enableLocationComponent(style)
