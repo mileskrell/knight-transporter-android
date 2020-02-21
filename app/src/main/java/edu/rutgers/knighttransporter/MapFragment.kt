@@ -3,11 +3,18 @@ package edu.rutgers.knighttransporter
 import android.graphics.Color
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.mapbox.android.core.permissions.PermissionsListener
+import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
+import com.mapbox.mapboxsdk.location.modes.CameraMode
+import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
+import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.layers.FillLayer
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
@@ -19,6 +26,34 @@ class MapFragment : Fragment() {
     private val mapViewModel: MapViewModel by viewModels()
 
     private lateinit var mapView: MapView
+    private lateinit var mapboxMap: MapboxMap
+
+    private val permissionsManager = PermissionsManager(object : PermissionsListener {
+        override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
+            // TODO: The code here runs at the same time that the permission is re-requested.
+            //  Meaning that this message won't be what the user is looking at.
+            //  I think Mapbox messed up.
+            Toast.makeText(
+                context,
+                "You need to grant that permission!",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+
+        override fun onPermissionResult(granted: Boolean) {
+            if (granted) {
+                mapboxMap.getStyle { style ->
+                    enableLocationComponent(style)
+                }
+            } else {
+                Toast.makeText(
+                    context,
+                    "Location permission denied; not showing location",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    })
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,6 +64,23 @@ class MapFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
+    fun enableLocationComponent(style: Style) {
+        if (PermissionsManager.areLocationPermissionsGranted(context!!)) {
+            mapboxMap.locationComponent.apply {
+                activateLocationComponent(
+                    LocationComponentActivationOptions.builder(context!!, style).build()
+                )
+                isLocationComponentEnabled = true
+                cameraMode = CameraMode.TRACKING
+                renderMode = RenderMode.COMPASS
+            }
+        } else {
+            // TODO: Communicate between fragment and activity in a cleaner way?
+            (activity as MainActivity).permissionsManager = permissionsManager
+            permissionsManager.requestLocationPermissions(activity)
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setHasOptionsMenu(true)
         // We're doing this because we can't use synthetic properties in (at least) onDestroy()
@@ -36,7 +88,10 @@ class MapFragment : Fragment() {
 
         mapView.onCreate(mapViewModel.mapInstanceState)
         mapView.getMapAsync { mapboxMap ->
+            this.mapboxMap = mapboxMap
             mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
+                enableLocationComponent(style)
+
                 style.addSource(GeoJsonSource("rBuildings-source", URI(buildingsUrl)))
                 style.addSource(GeoJsonSource("rParkingLots-source", URI(parkingLotsUrl)))
 
