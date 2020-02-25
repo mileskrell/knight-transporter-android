@@ -110,12 +110,12 @@ class MapFragment : Fragment() {
                 style.addSource(GeoJsonSource("rBuildings-source", URI(buildingsUrl)))
                 style.addSource(GeoJsonSource("rParkingLots-source", URI(parkingLotsUrl)))
 
-                FillLayer("rBuildings-layer", "rBuildings-source").run {
-                    setProperties(PropertyFactory.fillColor(Color.BLACK))
-                    style.addLayer(this)
-                }
                 FillLayer("rParkingLots-layer", "rParkingLots-source").run {
                     setProperties(PropertyFactory.fillColor(Color.GRAY))
+                    style.addLayer(this)
+                }
+                FillLayer("rBuildings-layer", "rBuildings-source").run {
+                    setProperties(PropertyFactory.fillColor(Color.BLACK))
                     style.addLayer(this)
                 }
             }
