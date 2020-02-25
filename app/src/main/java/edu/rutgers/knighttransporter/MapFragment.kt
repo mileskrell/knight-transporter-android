@@ -93,10 +93,14 @@ class MapFragment : Fragment() {
                 val point = mapboxMap.projection.toScreenLocation(latLng)
                 val features =
                     mapboxMap.queryRenderedFeatures(point, "rBuildings-layer", "rParkingLots-layer")
-                if (features.size > 1) {
-                    Toast.makeText(context, "${features.size} items at this point", Toast.LENGTH_LONG).show()
-                }
-                for (feature in features) {
+                if (features.isNotEmpty()) {
+                    if (features.size > 1) {
+                        Toast.makeText(
+                            context,
+                            "${features.size} items at this point",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                     val name = features.first()?.properties()?.get("BldgName")?.asString
                         ?: features.first()?.properties()?.get("Lot_Name")?.asString ?: "No name"
                     AlertDialog.Builder(context!!).setMessage(name).show()
