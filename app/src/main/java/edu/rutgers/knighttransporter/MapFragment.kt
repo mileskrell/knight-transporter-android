@@ -110,13 +110,18 @@ class MapFragment : Fragment() {
                 style.addSource(GeoJsonSource("rBuildings-source", URI(buildingsUrl)))
                 style.addSource(GeoJsonSource("rParkingLots-source", URI(parkingLotsUrl)))
 
+                // This is my attempt to add the layers for the polygons at the right position -
+                // above the base map, streets, etc., but below any text labels.
+                // TODO: Is this the best way to do this? Does it work with all map styles?
+                val firstLabelLayerId = style.layers.first { it.id.contains("label") }.id
+
                 FillLayer("rParkingLots-layer", "rParkingLots-source").run {
                     setProperties(PropertyFactory.fillColor(Color.GRAY))
-                    style.addLayer(this)
+                    style.addLayerBelow(this, firstLabelLayerId)
                 }
                 FillLayer("rBuildings-layer", "rBuildings-source").run {
                     setProperties(PropertyFactory.fillColor(Color.BLACK))
-                    style.addLayer(this)
+                    style.addLayerBelow(this, firstLabelLayerId)
                 }
             }
         }
