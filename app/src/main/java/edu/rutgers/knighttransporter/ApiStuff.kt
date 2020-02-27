@@ -8,5 +8,6 @@ const val commonParams = "f=geojson&geometry=%7B%22xmin%22%3A+$xMin%2C+%22ymin%2
 
 const val baseUrl = "https://services1.arcgis.com/ze0XBzU1FXj94DJq/arcgis/rest/services/"
 
+const val walkwaysUrl = baseUrl + "Rutgers_University_Walkways/FeatureServer/0/query?$commonParams&outFields=" // outFields=Site_ID%2CDistrict or whatever we want to use
 const val buildingsUrl = baseUrl + "Rutgers_University_Buildings/FeatureServer/0/query?$commonParams&resultType=none&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=BldgName%2C+BldgNum%2C+Latitude%2C+Longitude&returnGeometry=true&returnCentroid=false&featureEncoding=esriDefault&multipatchOption=xyFootprint&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&cacheHint=false&returnZ=false&returnM=false&returnExceededLimitFeatures=true&sqlFormat=none"
 const val parkingLotsUrl = baseUrl + "Rutgers_University_Parking/FeatureServer/0/query?$commonParams&outFields=Parking_ID%2C%20Lot_Name%2C%20Latitude%2C%20Longitude&where=1%3D1"

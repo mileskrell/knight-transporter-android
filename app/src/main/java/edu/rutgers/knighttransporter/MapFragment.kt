@@ -18,8 +18,11 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.layers.FillLayer
+import com.mapbox.mapboxsdk.style.layers.Property
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
+import kotlinx.android.synthetic.main.fragment_map.*
 import java.net.URI
 
 class MapFragment : Fragment() {
@@ -28,6 +31,9 @@ class MapFragment : Fragment() {
 
     private lateinit var mapView: MapView
     private lateinit var mapboxMap: MapboxMap
+
+    var parkingLayer: FillLayer? = null
+    var buildingLayer: FillLayer? = null
 
     private val permissionsManager = PermissionsManager(object : PermissionsListener {
         override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
@@ -75,6 +81,23 @@ class MapFragment : Fragment() {
                 cameraMode = CameraMode.TRACKING
                 renderMode = RenderMode.COMPASS
             }
+            button_debug.setOnClickListener {
+                if (buildingLayer?.visibility?.value == Property.VISIBLE) {
+                    buildingLayer?.setProperties(visibility(Property.NONE))
+                    parkingLayer?.setProperties(visibility(Property.NONE))
+                } else {
+                    buildingLayer?.setProperties(visibility(Property.VISIBLE))
+                    parkingLayer?.setProperties(visibility(Property.VISIBLE))
+                }
+                // For animating to current location
+//                if (!::mapboxMap.isInitialized) return@setOnClickListener
+//                val last = mapboxMap.locationComponent.lastKnownLocation
+//                if (last != null) {
+//                    mapboxMap.animateCamera {
+//                        CameraUpdateFactory.newLatLng(LatLng(last.latitude, last.longitude)).getCameraPosition(it)
+//                    }
+//                }
+            }
         } else {
             // TODO: Communicate between fragment and activity in a cleaner way?
             (activity as MainActivity).permissionsManager = permissionsManager
@@ -111,6 +134,7 @@ class MapFragment : Fragment() {
             mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
                 enableLocationComponent(style)
 
+                style.addSource(GeoJsonSource("rWalkways-source", URI(walkwaysUrl)))
                 style.addSource(GeoJsonSource("rBuildings-source", URI(buildingsUrl)))
                 style.addSource(GeoJsonSource("rParkingLots-source", URI(parkingLotsUrl)))
 
@@ -119,14 +143,35 @@ class MapFragment : Fragment() {
                 // TODO: Is this the best way to do this? Does it work with all map styles?
                 val firstLabelLayerId = style.layers.first { it.id.contains("label") }.id
 
-                FillLayer("rParkingLots-layer", "rParkingLots-source").run {
-                    setProperties(PropertyFactory.fillColor(Color.GRAY))
+                FillLayer("rWalkways-layer", "rWalkways-source").apply {
+                    setProperties(PropertyFactory.fillColor(0x88964b00.toInt()))
                     style.addLayerBelow(this, firstLabelLayerId)
                 }
-                FillLayer("rBuildings-layer", "rBuildings-source").run {
+                parkingLayer = FillLayer("rParkingLots-layer", "rParkingLots-source").apply {
+                    setProperties(PropertyFactory.fillColor(0x88888888.toInt()))
+                    style.addLayerBelow(this, firstLabelLayerId)
+                }
+                buildingLayer = FillLayer("rBuildings-layer", "rBuildings-source").apply {
                     setProperties(PropertyFactory.fillColor(Color.BLACK))
                     style.addLayerBelow(this, firstLabelLayerId)
                 }
+
+                // Remove Mapbox Streets building stuff
+                style.removeLayer("building")
+                style.removeLayer("building-outline")
+                style.removeLayer("building-number-label")
+                style.removeLayer("poi-label")
+
+                // Remove Mapbox Streets pedestrian paths (we're showing our own walkway data)
+                style.removeLayer("road-path-bg")
+                style.removeLayer("road-path")
+
+                // Remove Mapbox Streets stairs
+                style.removeLayer("road-steps")
+                style.removeLayer("road-steps-bg")
+
+                // Remove Mapbox Streets bus stop icons
+                style.removeLayer("transit-label")
             }
         }
     }

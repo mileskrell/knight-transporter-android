@@ -14,4 +14,14 @@
         mapbox:mapbox_cameraTargetLng="-74.4624206535"
         mapbox:mapbox_cameraZoom="14" />
 
+    <Button
+        android:id="@+id/button_debug"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Toggle buildings/lots"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        mapbox:layout_constraintEnd_toEndOf="parent"
+        mapbox:layout_constraintBottom_toBottomOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
