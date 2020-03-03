@@ -11,6 +11,8 @@ import androidx.navigation.fragment.findNavController
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
+import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
@@ -81,22 +83,15 @@ class MapFragment : Fragment() {
                 cameraMode = CameraMode.TRACKING
                 renderMode = RenderMode.COMPASS
             }
-            button_debug.setOnClickListener {
-                if (buildingLayer?.visibility?.value == Property.VISIBLE) {
-                    buildingLayer?.setProperties(visibility(Property.NONE))
-                    parkingLayer?.setProperties(visibility(Property.NONE))
-                } else {
-                    buildingLayer?.setProperties(visibility(Property.VISIBLE))
-                    parkingLayer?.setProperties(visibility(Property.VISIBLE))
+            fab_my_location.setOnClickListener {
+                if (!::mapboxMap.isInitialized) return@setOnClickListener
+                val last = mapboxMap.locationComponent.lastKnownLocation
+                if (last != null) {
+                    mapboxMap.animateCamera {
+                        CameraUpdateFactory.newLatLng(LatLng(last.latitude, last.longitude))
+                            .getCameraPosition(it)
+                    }
                 }
-                // For animating to current location
-//                if (!::mapboxMap.isInitialized) return@setOnClickListener
-//                val last = mapboxMap.locationComponent.lastKnownLocation
-//                if (last != null) {
-//                    mapboxMap.animateCamera {
-//                        CameraUpdateFactory.newLatLng(LatLng(last.latitude, last.longitude)).getCameraPosition(it)
-//                    }
-//                }
             }
         } else {
             // TODO: Communicate between fragment and activity in a cleaner way?
@@ -192,6 +187,20 @@ class MapFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.menu_item_settings -> {
             findNavController().navigate(R.id.action_map_fragment_to_settings_fragment)
+            true
+        }
+        R.id.menu_item_toggle -> {
+            if (buildingLayer?.visibility?.value == Property.VISIBLE) {
+                buildingLayer?.setProperties(visibility(Property.NONE))
+                parkingLayer?.setProperties(visibility(Property.NONE))
+                item.setIcon(R.drawable.ic_visibility_black_24dp)
+                item.setTitle(R.string.show_buildings_lots)
+            } else {
+                buildingLayer?.setProperties(visibility(Property.VISIBLE))
+                parkingLayer?.setProperties(visibility(Property.VISIBLE))
+                item.setIcon(R.drawable.ic_visibility_off_black_24dp)
+                item.setTitle(R.string.hide_buildings_lots)
+            }
             true
         }
         else -> false
