@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/item_route_lx"
+        android:icon="@drawable/ic_route_lx" />
+    <item
+        android:id="@+id/item_route_h"
+        android:icon="@drawable/ic_route_h" />
+    <item
+        android:id="@+id/item_route_f"
+        android:icon="@drawable/ic_route_f" />
+    <item
+        android:id="@+id/item_route_ee"
+        android:icon="@drawable/ic_route_ee" />
+    <item
+        android:id="@+id/item_route_c"
+        android:icon="@drawable/ic_route_c" />
+    <item
+        android:id="@+id/item_route_b"
+        android:icon="@drawable/ic_route_b" />
+    <item
+        android:id="@+id/item_route_a"
+        android:icon="@drawable/ic_route_a" />
+</menu>

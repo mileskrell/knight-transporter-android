@@ -10,9 +10,11 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
@@ -105,9 +107,17 @@ class MapFragment : Fragment() {
         // We're doing this because we can't use synthetic properties in (at least) onDestroy()
         mapView = view.findViewById(R.id.map_view)
 
-        mapView.onCreate(mapViewModel.mapInstanceState)
-        mapView.getMapAsync { mapboxMap ->
+        map_view.onCreate(mapViewModel.mapInstanceState)
+        map_view.getMapAsync { mapboxMap ->
+            mapboxMap.addOnMoveListener(object: MapboxMap.OnMoveListener {
+                override fun onMoveBegin(detector: MoveGestureDetector) {
+                    routes_speed_dial.close()
+                }
+                override fun onMove(detector: MoveGestureDetector) {}
+                override fun onMoveEnd(detector: MoveGestureDetector) {}
+            })
             mapboxMap.addOnMapClickListener { latLng ->
+                routes_speed_dial.close()
                 val point = mapboxMap.projection.toScreenLocation(latLng)
                 val features =
                     mapboxMap.queryRenderedFeatures(point, "rBuildings-layer", "rParkingLots-layer")
@@ -127,6 +137,10 @@ class MapFragment : Fragment() {
             }
             this.mapboxMap = mapboxMap
             mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
+                mapboxMap.setLatLngBoundsForCameraTarget(
+                    LatLngBounds.from(41.36, -73.89, 38.92, -75.56)
+                )
+                mapboxMap.setMinZoomPreference(7.0)
                 enableLocationComponent(style)
 
                 style.addSource(GeoJsonSource("rWalkways-source", URI(walkwaysUrl)))
@@ -169,6 +183,11 @@ class MapFragment : Fragment() {
                 style.removeLayer("transit-label")
             }
         }
+        routes_speed_dial.inflate(R.menu.routes_speed_dial_menu)
+        routes_speed_dial.setOnActionSelectedListener {
+            Toast.makeText(context, "You tapped a route", Toast.LENGTH_SHORT).show()
+            false
+        }
     }
 
     override fun onDestroyView() {
@@ -208,22 +227,22 @@ class MapFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        mapView.onPause()
+        map_view.onPause()
     }
 
     override fun onResume() {
         super.onResume()
-        mapView.onResume()
+        map_view.onResume()
     }
 
     override fun onStop() {
         super.onStop()
-        mapView.onStop()
+        map_view.onStop()
     }
 
     override fun onStart() {
         super.onStart()
-        mapView.onStart()
+        map_view.onStart()
     }
 
     override fun onDestroy() {
