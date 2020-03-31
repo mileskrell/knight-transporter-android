@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Knight Transporter</string>
+    <string name="app_name">Android + Mapbox</string>
 
     <string name="map_fragment_title">@string/app_name</string>
     <string name="settings">Settings</string>
