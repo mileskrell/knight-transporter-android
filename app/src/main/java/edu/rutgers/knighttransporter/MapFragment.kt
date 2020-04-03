@@ -5,9 +5,12 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
+import com.ferfalk.simplesearchview.SimpleSearchView
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.android.gestures.MoveGestureDetector
@@ -26,10 +29,24 @@ import com.mapbox.mapboxsdk.style.layers.Property
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_map.*
+import kotlinx.coroutines.launch
 import java.net.URI
+import java.util.Locale
 
 class MapFragment : Fragment() {
+
+    companion object {
+        const val MIN_ZOOM = 7.0
+        const val LAT_NORTH = 41.36
+        const val LNG_EAST = -73.89
+        const val LAT_SOUTH = 38.92
+        const val LNG_WEST = -75.56
+    }
+
+    private lateinit var toolbar: Toolbar
+    private lateinit var simpleSearchView: SimpleSearchView
 
     private val mapViewModel: MapViewModel by viewModels()
 
@@ -72,6 +89,8 @@ class MapFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         Mapbox.getInstance(context!!, mapboxToken)
+        toolbar = (requireActivity() as MainActivity).toolbar
+        simpleSearchView = (requireActivity() as MainActivity).simple_search_view
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
@@ -109,7 +128,8 @@ class MapFragment : Fragment() {
 
         map_view.onCreate(mapViewModel.mapInstanceState)
         map_view.getMapAsync { mapboxMap ->
-            mapboxMap.addOnMoveListener(object: MapboxMap.OnMoveListener {
+            this.mapboxMap = mapboxMap
+            mapboxMap.addOnMoveListener(object : MapboxMap.OnMoveListener {
                 override fun onMoveBegin(detector: MoveGestureDetector) {
                     routes_speed_dial.close()
                 }
@@ -135,13 +155,20 @@ class MapFragment : Fragment() {
                 }
                 features.isNotEmpty()
             }
-            this.mapboxMap = mapboxMap
             mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
                 mapboxMap.setLatLngBoundsForCameraTarget(
-                    LatLngBounds.from(41.36, -73.89, 38.92, -75.56)
+                    LatLngBounds.from(LAT_NORTH, LNG_EAST, LAT_SOUTH, LNG_WEST)
                 )
-                mapboxMap.setMinZoomPreference(7.0)
+                mapboxMap.setMinZoomPreference(MIN_ZOOM)
                 enableLocationComponent(style)
+
+                mapViewModel.viewModelScope.launch {
+                    mapViewModel.getWalkways()
+                    mapViewModel.getBuildings()
+                    activity?.runOnUiThread {
+                        Toast.makeText(context, "Fetched walkways/buildings (again)", Toast.LENGTH_LONG).show()
+                    }
+                }
 
                 style.addSource(GeoJsonSource("rWalkways-source", URI(walkwaysUrl)))
                 style.addSource(GeoJsonSource("rBuildings-source", URI(buildingsUrl)))
@@ -188,6 +215,41 @@ class MapFragment : Fragment() {
             Toast.makeText(context, "You tapped a route", Toast.LENGTH_SHORT).show()
             false
         }
+
+        simpleSearchView.setOnSearchViewListener(object : SimpleSearchView.SearchViewListener {
+            override fun onSearchViewShownAnimation() {}
+            override fun onSearchViewClosed() {}
+            override fun onSearchViewClosedAnimation() {
+                toolbar.visibility = View.VISIBLE
+            }
+            override fun onSearchViewShown() {
+                toolbar.visibility = View.INVISIBLE
+            }
+        })
+        simpleSearchView.setOnQueryTextListener(object : SimpleSearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                mapViewModel.viewModelScope.launch {
+                    val matchingBuildings = mapViewModel.getBuildings().features.filter {
+                        it.properties.bldgName.toLowerCase(Locale.getDefault())
+                            .contains(query!!.toLowerCase(Locale.getDefault()))
+                    }
+                    if (matchingBuildings.isNotEmpty()) {
+                        val bldgProps = matchingBuildings.first().properties
+                        mapboxMap.moveCamera(
+                            CameraUpdateFactory.newLatLngZoom(
+                                LatLng(bldgProps.latitude, bldgProps.longitude), 16.0
+                            )
+                        )
+                    } else {
+                        Toast.makeText(context, "No matches", Toast.LENGTH_LONG).show()
+                    }
+                }
+                return false
+            }
+            // TODO: Show search suggestions
+            override fun onQueryTextChange(newText: String?) = false
+            override fun onQueryTextCleared() = false
+        })
     }
 
     override fun onDestroyView() {
@@ -201,6 +263,7 @@ class MapFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.map_overflow_menu, menu)
+        simpleSearchView.setMenuItem(menu.findItem(R.id.menu_item_search))
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
@@ -212,12 +275,10 @@ class MapFragment : Fragment() {
             if (buildingLayer?.visibility?.value == Property.VISIBLE) {
                 buildingLayer?.setProperties(visibility(Property.NONE))
                 parkingLayer?.setProperties(visibility(Property.NONE))
-                item.setIcon(R.drawable.ic_visibility_black_24dp)
                 item.setTitle(R.string.show_buildings_lots)
             } else {
                 buildingLayer?.setProperties(visibility(Property.VISIBLE))
                 parkingLayer?.setProperties(visibility(Property.VISIBLE))
-                item.setIcon(R.drawable.ic_visibility_off_black_24dp)
                 item.setTitle(R.string.hide_buildings_lots)
             }
             true

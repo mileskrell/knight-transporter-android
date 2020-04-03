@@ -2,13 +2,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/menu_item_search"
+        android:icon="@drawable/ic_search_white_24dp"
+        android:title="@string/search"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/menu_item_settings"
         android:icon="@drawable/ic_settings_black_24dp"
         android:title="@string/settings" />
 
     <item
         android:id="@+id/menu_item_toggle"
-        android:icon="@drawable/ic_visibility_off_black_24dp"
-        android:title="@string/hide_buildings_lots"
-        app:showAsAction="ifRoom" />
+        android:title="@string/hide_buildings_lots" />
 </menu>

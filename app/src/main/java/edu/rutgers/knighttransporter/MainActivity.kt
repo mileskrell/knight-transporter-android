@@ -6,6 +6,7 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.mapbox.android.core.permissions.PermissionsManager
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
@@ -15,12 +16,19 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setSupportActionBar(toolbar)
 
         navController = findNavController(R.id.nav_host_fragment)
         setupActionBarWithNavController(navController)
     }
 
     override fun onSupportNavigateUp() = navController.navigateUp() || super.onSupportNavigateUp()
+
+    override fun onBackPressed() {
+        if (!simple_search_view.onBackPressed()) {
+            super.onBackPressed()
+        }
+    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
