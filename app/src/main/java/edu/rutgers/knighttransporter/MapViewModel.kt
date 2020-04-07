@@ -10,5 +10,7 @@ class MapViewModel : ViewModel() {
 
     suspend fun getWalkways() = repository.getWalkways()
 
+    suspend fun getParkingLots() = repository.getParkingLots()
+
     suspend fun getBuildings() = repository.getBuildings()
 }

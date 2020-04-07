@@ -17,11 +17,13 @@ data class WalkwaysResponse(
     data class Feature(
         val type: String,
         val geometry: Geometry,
-        val properties: Any? = null
+        val properties: FeatureProperties
     )
 
     data class Geometry(
         val type: String,
         val coordinates: List<List<List<List<Double>>>>
     )
+
+    class FeatureProperties
 }

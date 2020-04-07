@@ -172,12 +172,12 @@ class MapFragment : Fragment() {
 
                 mapViewModel.viewModelScope.launch {
 //                    mapViewModel.getWalkways() // TODO: Do I have any use for the walkway data here?
+                    mapViewModel.getParkingLots()
                     mapViewModel.getBuildings()
-                    // TODO: Also get and show suggestions for parking lots
 
                     // Set up search suggestions
 
-                    val buildingNameLatLngs = mapViewModel.getBuildings().features
+                    val buildingItems = mapViewModel.getBuildings().features
                         .map {
                             RutgersPlacesSearchAdapter.AdapterPlaceItem(
                                 it.properties.bldgName,
@@ -185,12 +185,19 @@ class MapFragment : Fragment() {
                                 resources.getDrawable(R.drawable.building, null)
                             )
                         }
-                        .toTypedArray()
 
+                    val parkingLotItems = mapViewModel.getParkingLots().features
+                        .map {
+                            RutgersPlacesSearchAdapter.AdapterPlaceItem(
+                                it.properties.lotName,
+                                LatLng(it.properties.latitude, it.properties.longitude),
+                                resources.getDrawable(R.drawable.ic_local_parking_black_24dp, null)
+                            )
+                        }
                     val adapter =
                         RutgersPlacesSearchAdapter(
                             context!!,
-                            buildingNameLatLngs
+                            buildingItems.plus(parkingLotItems).toTypedArray()
                         )
                     searchView.setAdapter(adapter)
 
