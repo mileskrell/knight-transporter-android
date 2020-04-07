@@ -165,6 +165,10 @@ class MapFragment : Fragment() {
                 )
                 mapboxMap.setMinZoomPreference(MIN_ZOOM)
                 enableLocationComponent(style)
+                mapboxMap.uiSettings.run {
+                    isRotateGesturesEnabled = false
+                    isTiltGesturesEnabled = false
+                }
 
                 mapViewModel.viewModelScope.launch {
 //                    mapViewModel.getWalkways() // TODO: Do I have any use for the walkway data here?
