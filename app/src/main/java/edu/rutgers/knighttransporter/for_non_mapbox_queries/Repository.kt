@@ -6,8 +6,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class Repository {
     var walkways: WalkwaysResponse? = null
+    var parkingLots: ParkingLotsResponse? = null
     var buildings: BuildingsResponse? = null
-//    var parkingLots: ParkingLotsResponse? = null
 
     val service = Retrofit.Builder()
         .baseUrl(baseUrl)
@@ -19,11 +19,11 @@ class Repository {
         walkways = it
     }
 
+    suspend fun getParkingLots() = parkingLots ?: service.getParkingLots().also {
+        parkingLots = it
+    }
+
     suspend fun getBuildings() = buildings ?: service.getBuildings().also {
         buildings = it
     }
-
-//    suspend fun getParkingLots() = parkingLots ?: service.getParkingLots().also {
-//        parkingLots = it
-//    }
 }

@@ -2,7 +2,7 @@ package edu.rutgers.knighttransporter.for_non_mapbox_queries
 
 import com.google.gson.annotations.SerializedName
 
-data class BuildingsResponse(
+data class ParkingLotsResponse(
     val type: String,
     val crs: CRS,
     val features: List<Feature>
@@ -30,8 +30,8 @@ data class BuildingsResponse(
     )
 
     data class FeatureProperties(
-        @SerializedName("BldgName") val bldgName: String,
-        @SerializedName("BldgNum") val bldgNum: Long,
+        @SerializedName("Parking_ID") val parkingID: String,
+        @SerializedName("Lot_Name") val lotName: String,
         @SerializedName("Latitude") val latitude: Double,
         @SerializedName("Longitude") val longitude: Double
     )
