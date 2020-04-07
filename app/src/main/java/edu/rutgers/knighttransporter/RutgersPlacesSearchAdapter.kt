@@ -16,13 +16,12 @@ import java.util.*
  */
 class RutgersPlacesSearchAdapter(
     context: Context,
-    private val adapterPlaceItems: Array<AdapterPlaceItem>,
-    private var suggestionIcon: Drawable
+    private val adapterPlaceItems: Array<AdapterPlaceItem>
 ) : BaseAdapter(), Filterable {
     private var suggestions = emptyList<AdapterPlaceItem>()
     private val inflater = LayoutInflater.from(context)
 
-    data class AdapterPlaceItem(val placeName: String, val latLng: LatLng)
+    data class AdapterPlaceItem(val placeName: String, val latLng: LatLng, val icon: Drawable)
 
     companion object {
         const val MAX_SUGGESTIONS = 5
@@ -96,6 +95,7 @@ class RutgersPlacesSearchAdapter(
             textView.text = getItem(position).placeName
             textView.maxLines = 2
             textView.ellipsize = TextUtils.TruncateAt.END
+            imageView.setImageDrawable(getItem(position).icon)
         }
 
         return actualConvertView!!
@@ -103,10 +103,6 @@ class RutgersPlacesSearchAdapter(
 
     private inner class SuggestionsViewHolder(convertView: View) {
         val textView: TextView = convertView.findViewById(R.id.suggestion_text)
-
-        init {
-            val imageView = convertView.findViewById<ImageView>(R.id.suggestion_icon)
-            imageView.setImageDrawable(suggestionIcon)
-        }
+        val imageView: ImageView = convertView.findViewById(R.id.suggestion_icon)
     }
 }
