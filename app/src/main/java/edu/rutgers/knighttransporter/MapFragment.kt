@@ -90,17 +90,17 @@ class MapFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        Mapbox.getInstance(context!!, mapboxToken)
+        Mapbox.getInstance(requireContext(), mapboxToken)
         toolbar = (requireActivity() as MainActivity).toolbar
         searchView = (requireActivity() as MainActivity).search_view
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
     fun enableLocationComponent(style: Style) {
-        if (PermissionsManager.areLocationPermissionsGranted(context!!)) {
+        if (PermissionsManager.areLocationPermissionsGranted(requireContext())) {
             mapboxMap.locationComponent.apply {
                 activateLocationComponent(
-                    LocationComponentActivationOptions.builder(context!!, style).build()
+                    LocationComponentActivationOptions.builder(requireContext(), style).build()
                 )
                 isLocationComponentEnabled = true
                 cameraMode = CameraMode.TRACKING
@@ -155,7 +155,7 @@ class MapFragment : Fragment() {
                     }
                     val name = features.first()?.properties()?.get("BldgName")?.asString
                         ?: features.first()?.properties()?.get("Lot_Name")?.asString ?: "No name"
-                    AlertDialog.Builder(context!!).setMessage(name).show()
+                    AlertDialog.Builder(requireContext()).setMessage(name).show()
                 }
                 features.isNotEmpty()
             }
@@ -196,7 +196,7 @@ class MapFragment : Fragment() {
                         }
                     val adapter =
                         RutgersPlacesSearchAdapter(
-                            context!!,
+                            requireContext(),
                             buildingItems.plus(parkingLotItems).toTypedArray()
                         )
                     searchView.setAdapter(adapter)
