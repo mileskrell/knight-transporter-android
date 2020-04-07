@@ -177,7 +177,8 @@ class MapFragment : Fragment() {
                         .map {
                             RutgersPlacesSearchAdapter.AdapterPlaceItem(
                                 it.properties.bldgName,
-                                LatLng(it.properties.latitude, it.properties.longitude)
+                                LatLng(it.properties.latitude, it.properties.longitude),
+                                resources.getDrawable(R.drawable.building, null)
                             )
                         }
                         .toTypedArray()
@@ -185,8 +186,7 @@ class MapFragment : Fragment() {
                     val adapter =
                         RutgersPlacesSearchAdapter(
                             context!!,
-                            buildingNameLatLngs,
-                            resources.getDrawable(R.drawable.building, null)
+                            buildingNameLatLngs
                         )
                     searchView.setAdapter(adapter)
 
