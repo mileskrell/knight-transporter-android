@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
-import com.ferfalk.simplesearchview.SimpleSearchView
+import com.leinardi.android.speeddial.SpeedDialView
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.android.gestures.MoveGestureDetector
@@ -29,11 +29,11 @@ import com.mapbox.mapboxsdk.style.layers.Property
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
+import com.miguelcatalan.materialsearchview.MaterialSearchView
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_map.*
 import kotlinx.coroutines.launch
 import java.net.URI
-import java.util.Locale
 
 class MapFragment : Fragment() {
 
@@ -46,7 +46,7 @@ class MapFragment : Fragment() {
     }
 
     private lateinit var toolbar: Toolbar
-    private lateinit var simpleSearchView: SimpleSearchView
+    private lateinit var searchView: MaterialSearchView
 
     private val mapViewModel: MapViewModel by viewModels()
 
@@ -55,6 +55,8 @@ class MapFragment : Fragment() {
 
     var parkingLayer: FillLayer? = null
     var buildingLayer: FillLayer? = null
+
+    var speedDialWasClosedBecauseSearchViewWasOpened = false
 
     private val permissionsManager = PermissionsManager(object : PermissionsListener {
         override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
@@ -90,7 +92,7 @@ class MapFragment : Fragment() {
     ): View? {
         Mapbox.getInstance(context!!, mapboxToken)
         toolbar = (requireActivity() as MainActivity).toolbar
-        simpleSearchView = (requireActivity() as MainActivity).simple_search_view
+        searchView = (requireActivity() as MainActivity).search_view
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
@@ -133,11 +135,13 @@ class MapFragment : Fragment() {
                 override fun onMoveBegin(detector: MoveGestureDetector) {
                     routes_speed_dial.close()
                 }
+
                 override fun onMove(detector: MoveGestureDetector) {}
                 override fun onMoveEnd(detector: MoveGestureDetector) {}
             })
             mapboxMap.addOnMapClickListener { latLng ->
                 routes_speed_dial.close()
+                searchView.closeSearch()
                 val point = mapboxMap.projection.toScreenLocation(latLng)
                 val features =
                     mapboxMap.queryRenderedFeatures(point, "rBuildings-layer", "rParkingLots-layer")
@@ -163,10 +167,44 @@ class MapFragment : Fragment() {
                 enableLocationComponent(style)
 
                 mapViewModel.viewModelScope.launch {
-                    mapViewModel.getWalkways()
+//                    mapViewModel.getWalkways() // TODO: Do I have any use for the walkway data here?
                     mapViewModel.getBuildings()
+                    // TODO: Also get and show suggestions for parking lots
+
+                    // Set up search suggestions
+
+                    val buildingNameLatLngs = mapViewModel.getBuildings().features
+                        .map {
+                            RutgersPlacesSearchAdapter.AdapterPlaceItem(
+                                it.properties.bldgName,
+                                LatLng(it.properties.latitude, it.properties.longitude)
+                            )
+                        }
+                        .toTypedArray()
+
+                    val adapter =
+                        RutgersPlacesSearchAdapter(
+                            context!!,
+                            buildingNameLatLngs,
+                            resources.getDrawable(R.drawable.building, null)
+                        )
+                    searchView.setAdapter(adapter)
+
+                    searchView.setOnItemClickListener { _, _, position, _ ->
+                        searchView.closeSearch()
+                        mapboxMap.animateCamera(
+                            CameraUpdateFactory.newLatLngZoom(
+                                adapter.getItem(position).latLng, 16.0
+                            )
+                        )
+                    }
+
                     activity?.runOnUiThread {
-                        Toast.makeText(context, "Fetched walkways/buildings (again)", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            context,
+                            "Fetched data needed for searching",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
 
@@ -211,44 +249,41 @@ class MapFragment : Fragment() {
             }
         }
         routes_speed_dial.inflate(R.menu.routes_speed_dial_menu)
+        routes_speed_dial.setOnChangeListener(object : SpeedDialView.OnChangeListener {
+            override fun onMainActionSelected() = false
+
+            override fun onToggleChanged(isOpen: Boolean) {
+                // Normally, we close the search when the speed dial is tapped. But we also close
+                // the speed dial when we open the search, and if that's why this method was called,
+                // then we shouldn't close the search.
+                if (isOpen || !speedDialWasClosedBecauseSearchViewWasOpened) {
+                    searchView.closeSearch()
+                }
+
+                speedDialWasClosedBecauseSearchViewWasOpened = false
+            }
+        })
         routes_speed_dial.setOnActionSelectedListener {
             Toast.makeText(context, "You tapped a route", Toast.LENGTH_SHORT).show()
             false
         }
 
-        simpleSearchView.setOnSearchViewListener(object : SimpleSearchView.SearchViewListener {
-            override fun onSearchViewShownAnimation() {}
+        searchView.setOnSearchViewListener(object : MaterialSearchView.SearchViewListener {
             override fun onSearchViewClosed() {}
-            override fun onSearchViewClosedAnimation() {
-                toolbar.visibility = View.VISIBLE
-            }
+
             override fun onSearchViewShown() {
-                toolbar.visibility = View.INVISIBLE
+                speedDialWasClosedBecauseSearchViewWasOpened = true
+                routes_speed_dial.close()
             }
         })
-        simpleSearchView.setOnQueryTextListener(object : SimpleSearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                mapViewModel.viewModelScope.launch {
-                    val matchingBuildings = mapViewModel.getBuildings().features.filter {
-                        it.properties.bldgName.toLowerCase(Locale.getDefault())
-                            .contains(query!!.toLowerCase(Locale.getDefault()))
-                    }
-                    if (matchingBuildings.isNotEmpty()) {
-                        val bldgProps = matchingBuildings.first().properties
-                        mapboxMap.moveCamera(
-                            CameraUpdateFactory.newLatLngZoom(
-                                LatLng(bldgProps.latitude, bldgProps.longitude), 16.0
-                            )
-                        )
-                    } else {
-                        Toast.makeText(context, "No matches", Toast.LENGTH_LONG).show()
-                    }
-                }
-                return false
-            }
-            // TODO: Show search suggestions
-            override fun onQueryTextChange(newText: String?) = false
-            override fun onQueryTextCleared() = false
+
+        // TODO: When you tap the search box, any old suggestions reappear. Make this not happen.
+        searchView.setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
+            // Don't close when submit button is tapped
+            override fun onQueryTextSubmit(query: String) = true
+
+            // It doesn't seem like the value for this one matters
+            override fun onQueryTextChange(newText: String) = false
         })
     }
 
@@ -263,7 +298,7 @@ class MapFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.map_overflow_menu, menu)
-        simpleSearchView.setMenuItem(menu.findItem(R.id.menu_item_search))
+        searchView.setMenuItem(menu.findItem(R.id.menu_item_search))
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
@@ -298,11 +333,15 @@ class MapFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
+        // Don't resize or move anything when the keyboard appears.
+        // Most importantly, this prevents the soft keyboard from causing the map to resize.
+        requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_UNSPECIFIED)
         map_view.onStop()
     }
 
     override fun onStart() {
         super.onStart()
+        requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
         map_view.onStart()
     }
 

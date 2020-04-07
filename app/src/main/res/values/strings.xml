@@ -8,5 +8,6 @@
     <string name="show_buildings_lots">Show buildings/parking lots</string>
     <string name="hide_buildings_lots">Hide buildings/parking lots</string>
 
+    <!-- TODO: Either shorten this text, or (ideally) find a way to ellipsize the TextView -->
     <string name="simple_search_hint">Search for a stop, route, or building</string>
 </resources>
