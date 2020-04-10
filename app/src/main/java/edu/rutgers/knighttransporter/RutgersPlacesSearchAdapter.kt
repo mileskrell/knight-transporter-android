@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import com.mapbox.geojson.Feature
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.miguelcatalan.materialsearchview.R
 import java.util.*
@@ -21,7 +22,7 @@ class RutgersPlacesSearchAdapter(
     private var suggestions = emptyList<AdapterPlaceItem>()
     private val inflater = LayoutInflater.from(context)
 
-    data class AdapterPlaceItem(val placeName: String, val latLng: LatLng, val icon: Drawable)
+    data class AdapterPlaceItem(val placeName: String, val latLng: LatLng, val icon: Drawable, val feature: Feature)
 
     companion object {
         const val MAX_SUGGESTIONS = 5
