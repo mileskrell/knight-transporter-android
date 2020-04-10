@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -14,6 +13,7 @@ import com.leinardi.android.speeddial.SpeedDialView
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.android.gestures.MoveGestureDetector
+import com.mapbox.geojson.Feature
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
@@ -25,15 +25,13 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.layers.FillLayer
+import com.mapbox.mapboxsdk.style.layers.LineLayer
 import com.mapbox.mapboxsdk.style.layers.Property
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.miguelcatalan.materialsearchview.MaterialSearchView
-import edu.rutgers.knighttransporter.for_non_mapbox_queries.BUILDING_NAME
-import edu.rutgers.knighttransporter.for_non_mapbox_queries.LATITUDE
-import edu.rutgers.knighttransporter.for_non_mapbox_queries.LONGITUDE
-import edu.rutgers.knighttransporter.for_non_mapbox_queries.LOT_NAME
+import edu.rutgers.knighttransporter.for_non_mapbox_queries.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_map.*
 import kotlinx.coroutines.launch
@@ -53,6 +51,8 @@ class MapFragment : Fragment() {
         const val PARKING_LOTS_LAYER = "rParkingLots-layer"
         const val BUILDINGS_SOURCE = "rBuildings-source"
         const val BUILDINGS_LAYER = "rBuildings-layer"
+        const val SELECTED_PLACE_SOURCE = "rSelectedPlace-source"
+        const val SELECTED_PLACE_LAYER = "rSelectedPlace-layer"
     }
 
     private lateinit var toolbar: Toolbar
@@ -135,6 +135,27 @@ class MapFragment : Fragment() {
         }
     }
 
+    private fun setSelectedPlace(style: Style, placeType: PlaceType, feature: Feature) {
+        style.removeLayer(SELECTED_PLACE_LAYER)
+        style.removeSource(SELECTED_PLACE_SOURCE)
+        style.addSource(GeoJsonSource(SELECTED_PLACE_SOURCE, feature))
+        LineLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).run {
+            setProperties(
+                PropertyFactory.lineColor(0xFFFF00FF.toInt()),
+                PropertyFactory.lineWidth(5f)
+            )
+            style.addLayerAbove(this, PARKING_LOTS_LAYER)
+        }
+        selected_place_text_view.text = feature.getNameForPlaceType(placeType)
+        selected_place_text_view.visibility = View.VISIBLE
+    }
+
+    private fun clearSelectedPlace(style: Style) {
+        style.removeLayer(SELECTED_PLACE_LAYER)
+        style.removeSource(SELECTED_PLACE_SOURCE)
+        selected_place_text_view.visibility = View.INVISIBLE
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setHasOptionsMenu(true)
         // We're doing this because we can't use synthetic properties in (at least) onDestroy()
@@ -151,27 +172,29 @@ class MapFragment : Fragment() {
                 override fun onMove(detector: MoveGestureDetector) {}
                 override fun onMoveEnd(detector: MoveGestureDetector) {}
             })
-            mapboxMap.addOnMapClickListener { latLng ->
-                routes_speed_dial.close()
-                searchView.closeSearch()
-                val point = mapboxMap.projection.toScreenLocation(latLng)
-                val features =
-                    mapboxMap.queryRenderedFeatures(point, BUILDINGS_LAYER, PARKING_LOTS_LAYER)
-                if (features.isNotEmpty()) {
-                    if (features.size > 1) {
-                        Toast.makeText(
-                            context,
-                            "${features.size} items at this point",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                    val name = features.first()?.getStringProperty(BUILDING_NAME)
-                        ?: features.first()?.getStringProperty(LOT_NAME) ?: "No name"
-                    AlertDialog.Builder(requireContext()).setMessage(name).show()
-                }
-                features.isNotEmpty()
-            }
             mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
+                mapboxMap.addOnMapClickListener { latLng ->
+                    routes_speed_dial.close()
+                    searchView.closeSearch()
+                    clearSelectedPlace(style)
+                    val point = mapboxMap.projection.toScreenLocation(latLng)
+
+                    val tappedBuildings = mapboxMap.queryRenderedFeatures(point, BUILDINGS_LAYER)
+                    if (tappedBuildings.isNotEmpty()) {
+                        setSelectedPlace(style, PlaceType.BUILDING, tappedBuildings.first())
+                        return@addOnMapClickListener true
+                    }
+
+                    val tappedParkingLots =
+                        mapboxMap.queryRenderedFeatures(point, PARKING_LOTS_LAYER)
+                    if (tappedParkingLots.isNotEmpty()) {
+                        setSelectedPlace(style, PlaceType.PARKING_LOT, tappedParkingLots.first())
+                        return@addOnMapClickListener true
+                    }
+
+                    false
+                }
+
                 mapboxMap.setLatLngBoundsForCameraTarget(
                     LatLngBounds.from(LAT_NORTH, LNG_EAST, LAT_SOUTH, LNG_WEST)
                 )
@@ -191,26 +214,18 @@ class MapFragment : Fragment() {
 
                     val buildingItems = buildings.features()
                         ?.map {
-                            val name = it.getStringProperty(BUILDING_NAME)
-                            val lat = it.getNumberProperty(LATITUDE).toDouble()
-                            val lng = it.getNumberProperty(LONGITUDE).toDouble()
                             RutgersPlacesSearchAdapter.AdapterPlaceItem(
-                                name,
-                                LatLng(lat, lng),
                                 resources.getDrawable(R.drawable.building, null),
+                                PlaceType.BUILDING,
                                 it
                             )
                         } ?: emptyList()
 
                     val parkingLotItems = parkingLots.features()
                         ?.map {
-                            val name = it.getStringProperty(LOT_NAME)
-                            val lat = it.getNumberProperty(LATITUDE).toDouble()
-                            val lng = it.getNumberProperty(LONGITUDE).toDouble()
                             RutgersPlacesSearchAdapter.AdapterPlaceItem(
-                                name,
-                                LatLng(lat, lng),
                                 resources.getDrawable(R.drawable.ic_local_parking_black_24dp, null),
+                                PlaceType.PARKING_LOT,
                                 it
                             )
                         } ?: emptyList()
@@ -228,6 +243,8 @@ class MapFragment : Fragment() {
                                 adapter.getItem(position).latLng, 16.0
                             )
                         )
+                        val placeItem = adapter.getItem(position)
+                        setSelectedPlace(style, placeItem.placeType, placeItem.feature)
                     }
 
                     activity?.runOnUiThread {
