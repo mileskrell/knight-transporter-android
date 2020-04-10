@@ -30,6 +30,10 @@ import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.miguelcatalan.materialsearchview.MaterialSearchView
+import edu.rutgers.knighttransporter.for_non_mapbox_queries.BUILDING_NAME
+import edu.rutgers.knighttransporter.for_non_mapbox_queries.LATITUDE
+import edu.rutgers.knighttransporter.for_non_mapbox_queries.LONGITUDE
+import edu.rutgers.knighttransporter.for_non_mapbox_queries.LOT_NAME
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_map.*
 import kotlinx.coroutines.launch
@@ -155,8 +159,8 @@ class MapFragment : Fragment() {
                             Toast.LENGTH_LONG
                         ).show()
                     }
-                    val name = features.first()?.properties()?.get("BldgName")?.asString
-                        ?: features.first()?.properties()?.get("Lot_Name")?.asString ?: "No name"
+                    val name = features.first()?.getStringProperty(BUILDING_NAME)
+                        ?: features.first()?.getStringProperty(LOT_NAME) ?: "No name"
                     AlertDialog.Builder(requireContext()).setMessage(name).show()
                 }
                 features.isNotEmpty()
@@ -174,28 +178,36 @@ class MapFragment : Fragment() {
 
                 mapViewModel.viewModelScope.launch {
 //                    mapViewModel.getWalkways() // TODO: Do I have any use for the walkway data here?
-                    mapViewModel.getParkingLots()
-                    mapViewModel.getBuildings()
+                    val parkingLots = mapViewModel.getParkingLots()
+                    val buildings = mapViewModel.getBuildings()
 
                     // Set up search suggestions
 
-                    val buildingItems = mapViewModel.getBuildings().features
-                        .map {
+                    val buildingItems = buildings.features()
+                        ?.map {
+                            val name = it.getStringProperty(BUILDING_NAME)
+                            val lat = it.getNumberProperty(LATITUDE).toDouble()
+                            val lng = it.getNumberProperty(LONGITUDE).toDouble()
                             RutgersPlacesSearchAdapter.AdapterPlaceItem(
-                                it.properties.bldgName,
-                                LatLng(it.properties.latitude, it.properties.longitude),
-                                resources.getDrawable(R.drawable.building, null)
+                                name,
+                                LatLng(lat, lng),
+                                resources.getDrawable(R.drawable.building, null),
+                                it
                             )
-                        }
+                        } ?: emptyList()
 
-                    val parkingLotItems = mapViewModel.getParkingLots().features
-                        .map {
+                    val parkingLotItems = parkingLots.features()
+                        ?.map {
+                            val name = it.getStringProperty(LOT_NAME)
+                            val lat = it.getNumberProperty(LATITUDE).toDouble()
+                            val lng = it.getNumberProperty(LONGITUDE).toDouble()
                             RutgersPlacesSearchAdapter.AdapterPlaceItem(
-                                it.properties.lotName,
-                                LatLng(it.properties.latitude, it.properties.longitude),
-                                resources.getDrawable(R.drawable.ic_local_parking_black_24dp, null)
+                                name,
+                                LatLng(lat, lng),
+                                resources.getDrawable(R.drawable.ic_local_parking_black_24dp, null),
+                                it
                             )
-                        }
+                        } ?: emptyList()
                     val adapter =
                         RutgersPlacesSearchAdapter(
                             requireContext(),

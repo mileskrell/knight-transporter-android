@@ -7,11 +7,11 @@ import retrofit2.http.GET
 
 interface GeoJSONService {
     @GET(walkwaysPath)
-    suspend fun getWalkways(): WalkwaysResponse
+    suspend fun getWalkways(): String
 
     @GET(parkingLotsPath)
-    suspend fun getParkingLots(): ParkingLotsResponse
+    suspend fun getParkingLots(): String
 
     @GET(buildingsPath)
-    suspend fun getBuildings(): BuildingsResponse
+    suspend fun getBuildings(): String
 }

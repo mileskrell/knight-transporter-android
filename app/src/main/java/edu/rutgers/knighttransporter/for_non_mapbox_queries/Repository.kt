@@ -1,29 +1,30 @@
 package edu.rutgers.knighttransporter.for_non_mapbox_queries
 
+import com.mapbox.geojson.FeatureCollection
 import edu.rutgers.knighttransporter.baseUrl
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 
 class Repository {
-    var walkways: WalkwaysResponse? = null
-    var parkingLots: ParkingLotsResponse? = null
-    var buildings: BuildingsResponse? = null
+    var walkways: FeatureCollection? = null
+    var parkingLots: FeatureCollection? = null
+    var buildings: FeatureCollection? = null
 
     val service = Retrofit.Builder()
         .baseUrl(baseUrl)
-        .addConverterFactory(GsonConverterFactory.create())
+        .addConverterFactory(ScalarsConverterFactory.create())
         .build()
         .create(GeoJSONService::class.java)
 
-    suspend fun getWalkways() = walkways ?: service.getWalkways().also {
-        walkways = it
+    suspend fun getWalkways() = walkways ?: service.getWalkways().let {
+        return FeatureCollection.fromJson(it)
     }
 
-    suspend fun getParkingLots() = parkingLots ?: service.getParkingLots().also {
-        parkingLots = it
+    suspend fun getParkingLots() = parkingLots ?: service.getParkingLots().let {
+        return FeatureCollection.fromJson(it)
     }
 
-    suspend fun getBuildings() = buildings ?: service.getBuildings().also {
-        buildings = it
+    suspend fun getBuildings() = buildings ?: service.getBuildings().let {
+        return FeatureCollection.fromJson(it)
     }
 }
