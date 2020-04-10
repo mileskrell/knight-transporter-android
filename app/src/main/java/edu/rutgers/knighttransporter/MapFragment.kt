@@ -47,6 +47,12 @@ class MapFragment : Fragment() {
         const val LNG_EAST = -73.89
         const val LAT_SOUTH = 38.92
         const val LNG_WEST = -75.56
+        const val WALKWAYS_SOURCE = "rWalkways-source"
+        const val WALKWAYS_LAYER = "rWalkways-layer"
+        const val PARKING_LOTS_SOURCE = "rParkingLots-source"
+        const val PARKING_LOTS_LAYER = "rParkingLots-layer"
+        const val BUILDINGS_SOURCE = "rBuildings-source"
+        const val BUILDINGS_LAYER = "rBuildings-layer"
     }
 
     private lateinit var toolbar: Toolbar
@@ -150,7 +156,7 @@ class MapFragment : Fragment() {
                 searchView.closeSearch()
                 val point = mapboxMap.projection.toScreenLocation(latLng)
                 val features =
-                    mapboxMap.queryRenderedFeatures(point, "rBuildings-layer", "rParkingLots-layer")
+                    mapboxMap.queryRenderedFeatures(point, BUILDINGS_LAYER, PARKING_LOTS_LAYER)
                 if (features.isNotEmpty()) {
                     if (features.size > 1) {
                         Toast.makeText(
@@ -233,24 +239,24 @@ class MapFragment : Fragment() {
                     }
                 }
 
-                style.addSource(GeoJsonSource("rWalkways-source", URI(walkwaysUrl)))
-                style.addSource(GeoJsonSource("rBuildings-source", URI(buildingsUrl)))
-                style.addSource(GeoJsonSource("rParkingLots-source", URI(parkingLotsUrl)))
+                style.addSource(GeoJsonSource(WALKWAYS_SOURCE, URI(walkwaysUrl)))
+                style.addSource(GeoJsonSource(BUILDINGS_SOURCE, URI(buildingsUrl)))
+                style.addSource(GeoJsonSource(PARKING_LOTS_SOURCE, URI(parkingLotsUrl)))
 
                 // This is my attempt to add the layers for the polygons at the right position -
                 // above the base map, streets, etc., but below any text labels.
                 // TODO: Is this the best way to do this? Does it work with all map styles?
                 val firstLabelLayerId = style.layers.first { it.id.contains("label") }.id
 
-                FillLayer("rWalkways-layer", "rWalkways-source").apply {
+                FillLayer(WALKWAYS_LAYER, WALKWAYS_SOURCE).apply {
                     setProperties(PropertyFactory.fillColor(0x88964b00.toInt()))
                     style.addLayerBelow(this, firstLabelLayerId)
                 }
-                parkingLayer = FillLayer("rParkingLots-layer", "rParkingLots-source").apply {
+                parkingLayer = FillLayer(PARKING_LOTS_LAYER, PARKING_LOTS_SOURCE).apply {
                     setProperties(PropertyFactory.fillColor(0x88888888.toInt()))
                     style.addLayerBelow(this, firstLabelLayerId)
                 }
-                buildingLayer = FillLayer("rBuildings-layer", "rBuildings-source").apply {
+                buildingLayer = FillLayer(BUILDINGS_LAYER, BUILDINGS_SOURCE).apply {
                     setProperties(PropertyFactory.fillColor(Color.BLACK))
                     style.addLayerBelow(this, firstLabelLayerId)
                 }
