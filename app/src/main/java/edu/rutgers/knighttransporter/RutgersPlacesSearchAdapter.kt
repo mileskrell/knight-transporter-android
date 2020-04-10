@@ -10,6 +10,7 @@ import android.widget.*
 import com.mapbox.geojson.Feature
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.miguelcatalan.materialsearchview.R
+import edu.rutgers.knighttransporter.for_non_mapbox_queries.*
 import java.util.*
 
 /**
@@ -22,7 +23,13 @@ class RutgersPlacesSearchAdapter(
     private var suggestions = emptyList<AdapterPlaceItem>()
     private val inflater = LayoutInflater.from(context)
 
-    data class AdapterPlaceItem(val placeName: String, val latLng: LatLng, val icon: Drawable, val feature: Feature)
+    data class AdapterPlaceItem(val icon: Drawable, val placeType: PlaceType, val feature: Feature) {
+        val placeName = feature.getNameForPlaceType(placeType)
+        val latLng = LatLng(
+            feature.getNumberProperty(LATITUDE).toDouble(),
+            feature.getNumberProperty(LONGITUDE).toDouble()
+        )
+    }
 
     companion object {
         const val MAX_SUGGESTIONS = 5
