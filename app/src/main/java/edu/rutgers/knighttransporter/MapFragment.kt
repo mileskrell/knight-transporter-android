@@ -116,6 +116,8 @@ class MapFragment : Fragment() {
                     }
                 }
             }
+            // We would call show(), but we want this to be instant. Cast to suppress warning.
+            (fab_my_location as View).visibility = View.VISIBLE
         } else {
             // TODO: Communicate between fragment and activity in a cleaner way?
             (activity as MainActivity).permissionsManager = permissionsManager
