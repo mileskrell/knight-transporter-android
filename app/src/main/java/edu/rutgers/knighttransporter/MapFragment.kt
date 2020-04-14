@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import com.leinardi.android.speeddial.SpeedDialView
@@ -24,10 +25,7 @@ import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
-import com.mapbox.mapboxsdk.style.layers.FillLayer
-import com.mapbox.mapboxsdk.style.layers.LineLayer
-import com.mapbox.mapboxsdk.style.layers.Property
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory
+import com.mapbox.mapboxsdk.style.layers.*
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.miguelcatalan.materialsearchview.MaterialSearchView
@@ -204,6 +202,11 @@ class MapFragment : Fragment() {
                     isRotateGesturesEnabled = false
                     isTiltGesturesEnabled = false
                 }
+
+                // TODO: Actually use this data. Try to animate to the new vehicle positions.
+                mapViewModel.routes.observe(viewLifecycleOwner, Observer {
+                    Toast.makeText(requireContext(), "Currently ${it.size} routes", Toast.LENGTH_SHORT).show()
+                })
 
                 mapViewModel.viewModelScope.launch {
 //                    mapViewModel.getWalkways() // TODO: Do I have any use for the walkway data here?
