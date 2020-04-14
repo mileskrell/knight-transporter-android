@@ -25,11 +25,19 @@ import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
-import com.mapbox.mapboxsdk.style.layers.*
+import com.mapbox.mapboxsdk.plugins.annotation.Symbol
+import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
+import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
+import com.mapbox.mapboxsdk.style.layers.FillLayer
+import com.mapbox.mapboxsdk.style.layers.LineLayer
+import com.mapbox.mapboxsdk.style.layers.Property
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
+import com.mapbox.mapboxsdk.utils.BitmapUtils
 import com.miguelcatalan.materialsearchview.MaterialSearchView
-import edu.rutgers.knighttransporter.for_non_mapbox_queries.*
+import edu.rutgers.knighttransporter.for_non_mapbox_queries.PlaceType
+import edu.rutgers.knighttransporter.for_non_mapbox_queries.getNameForPlaceType
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_map.*
 import kotlinx.coroutines.launch
@@ -51,6 +59,7 @@ class MapFragment : Fragment() {
         const val BUILDINGS_LAYER = "rBuildings-layer"
         const val SELECTED_PLACE_SOURCE = "rSelectedPlace-source"
         const val SELECTED_PLACE_LAYER = "rSelectedPlace-layer"
+        const val RUTGERS_BUS_ICON = "rutgers-bus-icon"
     }
 
     private lateinit var toolbar: Toolbar
@@ -61,8 +70,10 @@ class MapFragment : Fragment() {
     private lateinit var mapView: MapView
     private lateinit var mapboxMap: MapboxMap
 
-    var parkingLayer: FillLayer? = null
-    var buildingLayer: FillLayer? = null
+    private var parkingLayer: FillLayer? = null
+    private var buildingLayer: FillLayer? = null
+    private var symbolManager: SymbolManager? = null
+    private val vehicleMarkers = mutableListOf<Symbol>()
 
     var speedDialWasClosedBecauseSearchViewWasOpened = false
 
@@ -171,6 +182,15 @@ class MapFragment : Fragment() {
                 override fun onMoveEnd(detector: MoveGestureDetector) {}
             })
             mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
+                // add bus marker
+                style.addImage(
+                    RUTGERS_BUS_ICON,
+                    BitmapUtils.getBitmapFromDrawable(
+                        resources.getDrawable(R.drawable.ic_navigation_black_24dp, null)
+                    )!!,
+                    true // This lets us change its color
+                )
+                symbolManager = SymbolManager(mapView, mapboxMap, style)
                 mapboxMap.addOnMapClickListener { latLng ->
                     routes_speed_dial.close()
                     searchView.closeSearch()
@@ -203,9 +223,22 @@ class MapFragment : Fragment() {
                     isTiltGesturesEnabled = false
                 }
 
-                // TODO: Actually use this data. Try to animate to the new vehicle positions.
-                mapViewModel.routes.observe(viewLifecycleOwner, Observer {
-                    Toast.makeText(requireContext(), "Currently ${it.size} routes", Toast.LENGTH_SHORT).show()
+                // TODO: Try to animate to the new vehicle positions.
+                mapViewModel.routes.observe(viewLifecycleOwner, Observer { routes ->
+                    symbolManager?.delete(vehicleMarkers)
+                    vehicleMarkers.clear()
+                    routes.forEach { route ->
+                        route.vehicles.forEach { vehicle ->
+                            symbolManager?.create(
+                                SymbolOptions()
+                                    .withLatLng(LatLng(vehicle.location.lat, vehicle.location.lng))
+                                    .withIconRotate(vehicle.heading.toFloat())
+                                    .withIconColor("#${route.color}")
+                                    .withIconImage(RUTGERS_BUS_ICON)
+                                    .withIconSize(1.5f)
+                            )?.let { vehicleMarkers.add(it) }
+                        }
+                    }
                 })
 
                 mapViewModel.viewModelScope.launch {
@@ -398,6 +431,7 @@ class MapFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+        symbolManager?.onDestroy()
         mapView.onDestroy()
     }
 
