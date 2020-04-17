@@ -2,6 +2,8 @@ package edu.rutgers.knighttransporter
 
 import android.graphics.Color
 import android.os.Bundle
+import android.os.SystemClock
+import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
@@ -38,6 +40,7 @@ import com.mapbox.mapboxsdk.utils.BitmapUtils
 import com.miguelcatalan.materialsearchview.MaterialSearchView
 import edu.rutgers.knighttransporter.for_non_mapbox_queries.PlaceType
 import edu.rutgers.knighttransporter.for_non_mapbox_queries.getNameForPlaceType
+import edu.rutgers.knighttransporter.for_transloc.StopMarkerData
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_map.*
 import kotlinx.coroutines.launch
@@ -60,6 +63,7 @@ class MapFragment : Fragment() {
         const val SELECTED_PLACE_SOURCE = "rSelectedPlace-source"
         const val SELECTED_PLACE_LAYER = "rSelectedPlace-layer"
         const val RUTGERS_BUS_ICON = "rutgers-bus-icon"
+        const val RUTGERS_STOP_ICON = "rutgers-stop-icon"
     }
 
     private lateinit var toolbar: Toolbar
@@ -165,6 +169,36 @@ class MapFragment : Fragment() {
         selected_place_text_view.visibility = View.INVISIBLE
     }
 
+    // TODO: Changing a marker's color takes a moment. Should I use GeoJSON instead of
+    //  SymbolManager annotations for the stops/buses?
+    private var _changeSelectedStopMarkerLastCallTime = 0L
+    private fun changeSelectedStopMarker(newMarker: Symbol?) {
+        if (newMarker != null && mapViewModel.stopMarkers[newMarker.id] == null) {
+            // This symbol isn't a stop marker, so don't mess with it
+            // TODO: Implement tapping on buses
+            return
+        }
+        // When tapping on a marker, this will be called twice, roughly 2 ms apart - once for the
+        // SymbolManager's listener, and once for the map's listener. We should ignore this second call.
+        // TODO: Solve this in a cleaner way
+        val now = SystemClock.elapsedRealtime()
+        if (now - _changeSelectedStopMarkerLastCallTime < 50) {
+            return
+        }
+        _changeSelectedStopMarkerLastCallTime = now
+
+        mapViewModel.selectedStopMarker?.run {
+            iconSize = 1f
+            iconColor = "#ffa500"
+            symbolManager?.update(this)
+        }
+        mapViewModel.selectedStopMarker = newMarker?.apply {
+            iconSize = 2f
+            iconColor = "#ff00ff"
+            symbolManager?.update(this)
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setHasOptionsMenu(true)
         // We're doing this because we can't use synthetic properties in (at least) onDestroy()
@@ -190,8 +224,22 @@ class MapFragment : Fragment() {
                     )!!,
                     true // This lets us change its color
                 )
-                symbolManager = SymbolManager(mapView, mapboxMap, style)
+                style.addImage(
+                    RUTGERS_STOP_ICON,
+                    BitmapUtils.getBitmapFromDrawable(
+                        resources.getDrawable(R.drawable.circle, null)
+                    )!!,
+                    true // This lets us change its color
+                )
+                symbolManager = SymbolManager(mapView, mapboxMap, style).apply {
+                    iconAllowOverlap = true
+                    addClickListener { symbol ->
+                        clearSelectedPlace(style)
+                        changeSelectedStopMarker(symbol)
+                    }
+                }
                 mapboxMap.addOnMapClickListener { latLng ->
+                    changeSelectedStopMarker(null)
                     routes_speed_dial.close()
                     searchView.closeSearch()
                     clearSelectedPlace(style)
@@ -237,6 +285,42 @@ class MapFragment : Fragment() {
                                     .withIconImage(RUTGERS_BUS_ICON)
                                     .withIconSize(1.5f)
                             )?.let { vehicleMarkers.add(it) }
+                        }
+                    }
+                    // Only add stops once, since they won't change while the app is running
+                    if (mapViewModel.stopMarkers.isEmpty()) {
+                        for (route in routes) {
+                            for (stop in route.stops) {
+                                val stopMarkerData =
+                                    mapViewModel.stopMarkers.values.firstOrNull { it.stop.stopId == stop.stopId }
+                                if (stopMarkerData != null) {
+                                    stopMarkerData.associatedRoutes.add(route)
+                                    stopMarkerData.arrivalEstimates.addAll(
+                                        route.vehicles.flatMap { it.arrivalEstimates }
+                                            .filter { it.stopId == stopMarkerData.stop.stopId }
+                                    )
+                                    continue
+                                }
+
+                                Log.d("MapFragment", "Added ${stop.name} (${stop.stopId})")
+                                symbolManager?.create(
+                                    SymbolOptions()
+                                        .withLatLng(LatLng(stop.location.lat, stop.location.lng))
+                                        .withIconColor("#ffa500")
+                                        .withIconImage(RUTGERS_STOP_ICON)
+                                )?.let { symbol ->
+                                    mapViewModel.stopMarkers.put(
+                                        symbol.id,
+                                        StopMarkerData(stop).apply {
+                                            associatedRoutes.add(route)
+                                            arrivalEstimates.addAll(
+                                                route.vehicles.flatMap { it.arrivalEstimates }
+                                                    .filter { it.stopId == stop.stopId }
+                                            )
+                                        }
+                                    )
+                                }
+                            }
                         }
                     }
                 })
