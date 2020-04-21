@@ -2,7 +2,6 @@ package edu.rutgers.knighttransporter
 
 import android.graphics.Color
 import android.os.Bundle
-import android.os.SystemClock
 import android.util.Log
 import android.view.*
 import android.widget.Toast
@@ -17,6 +16,8 @@ import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Feature
+import com.mapbox.geojson.FeatureCollection
+import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
@@ -30,15 +31,13 @@ import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.plugins.annotation.Symbol
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
-import com.mapbox.mapboxsdk.style.layers.FillLayer
-import com.mapbox.mapboxsdk.style.layers.LineLayer
-import com.mapbox.mapboxsdk.style.layers.Property
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory
+import com.mapbox.mapboxsdk.style.layers.*
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import com.miguelcatalan.materialsearchview.MaterialSearchView
 import edu.rutgers.knighttransporter.for_non_mapbox_queries.PlaceType
+import edu.rutgers.knighttransporter.for_non_mapbox_queries.STOP_NAME
 import edu.rutgers.knighttransporter.for_non_mapbox_queries.getNameForPlaceType
 import edu.rutgers.knighttransporter.for_transloc.StopMarkerData
 import kotlinx.android.synthetic.main.activity_main.*
@@ -60,6 +59,8 @@ class MapFragment : Fragment() {
         const val PARKING_LOTS_LAYER = "rParkingLots-layer"
         const val BUILDINGS_SOURCE = "rBuildings-source"
         const val BUILDINGS_LAYER = "rBuildings-layer"
+        const val STOPS_SOURCE = "rStops-source"
+        const val STOPS_LAYER = "rStops-layer"
         const val SELECTED_PLACE_SOURCE = "rSelectedPlace-source"
         const val SELECTED_PLACE_LAYER = "rSelectedPlace-layer"
         const val RUTGERS_BUS_ICON = "rutgers-bus-icon"
@@ -148,16 +149,38 @@ class MapFragment : Fragment() {
         }
     }
 
+    /**
+     * Clear selected place and select a new one
+     */
     private fun setSelectedPlace(style: Style, placeType: PlaceType, feature: Feature) {
         style.removeLayer(SELECTED_PLACE_LAYER)
         style.removeSource(SELECTED_PLACE_SOURCE)
         style.addSource(GeoJsonSource(SELECTED_PLACE_SOURCE, feature))
-        LineLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).run {
-            setProperties(
-                PropertyFactory.lineColor(0xFFFF00FF.toInt()),
-                PropertyFactory.lineWidth(5f)
-            )
-            style.addLayerAbove(this, PARKING_LOTS_LAYER)
+        if (placeType == PlaceType.STOP) {
+            SymbolLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).run {
+                setProperties(
+                    PropertyFactory.iconColor(0xFFFF00FF.toInt()),
+                    PropertyFactory.iconImage(RUTGERS_STOP_ICON),
+                    PropertyFactory.iconAllowOverlap(true)
+                )
+                // We definitely have a stops layer
+                style.addLayerAbove(this, STOPS_LAYER)
+            }
+        } else {
+            LineLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).run {
+                setProperties(
+                    PropertyFactory.lineColor(0xFFFF00FF.toInt()),
+                    PropertyFactory.lineWidth(5f)
+                )
+                // Add layer as high as possible
+                style.addLayerAbove(
+                    this, when {
+                        style.getLayer(STOPS_LAYER) != null -> STOPS_LAYER
+                        style.getLayer(BUILDINGS_LAYER) != null -> BUILDINGS_LAYER
+                        else -> mapViewModel.firstLabelLayerId
+                    }
+                )
+            }
         }
         selected_place_text_view.text = feature.getNameForPlaceType(placeType)
         selected_place_text_view.visibility = View.VISIBLE
@@ -167,36 +190,6 @@ class MapFragment : Fragment() {
         style.removeLayer(SELECTED_PLACE_LAYER)
         style.removeSource(SELECTED_PLACE_SOURCE)
         selected_place_text_view.visibility = View.INVISIBLE
-    }
-
-    // TODO: Changing a marker's color takes a moment. Should I use GeoJSON instead of
-    //  SymbolManager annotations for the stops/buses?
-    private var _changeSelectedStopMarkerLastCallTime = 0L
-    private fun changeSelectedStopMarker(newMarker: Symbol?) {
-        if (newMarker != null && mapViewModel.stopMarkers[newMarker.id] == null) {
-            // This symbol isn't a stop marker, so don't mess with it
-            // TODO: Implement tapping on buses
-            return
-        }
-        // When tapping on a marker, this will be called twice, roughly 2 ms apart - once for the
-        // SymbolManager's listener, and once for the map's listener. We should ignore this second call.
-        // TODO: Solve this in a cleaner way
-        val now = SystemClock.elapsedRealtime()
-        if (now - _changeSelectedStopMarkerLastCallTime < 50) {
-            return
-        }
-        _changeSelectedStopMarkerLastCallTime = now
-
-        mapViewModel.selectedStopMarker?.run {
-            iconSize = 1f
-            iconColor = "#ffa500"
-            symbolManager?.update(this)
-        }
-        mapViewModel.selectedStopMarker = newMarker?.apply {
-            iconSize = 2f
-            iconColor = "#ff00ff"
-            symbolManager?.update(this)
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -216,6 +209,11 @@ class MapFragment : Fragment() {
                 override fun onMoveEnd(detector: MoveGestureDetector) {}
             })
             mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
+                // This is my attempt to add the layers for the polygons at the right position -
+                // above the base map, streets, etc., but below any text labels.
+                // TODO: Is this the best way to do this? Does it work with all map styles?
+                mapViewModel.firstLabelLayerId = style.layers.first { it.id.contains("label") }.id
+
                 // add bus marker
                 style.addImage(
                     RUTGERS_BUS_ICON,
@@ -234,16 +232,20 @@ class MapFragment : Fragment() {
                 symbolManager = SymbolManager(mapView, mapboxMap, style).apply {
                     iconAllowOverlap = true
                     addClickListener { symbol ->
-                        clearSelectedPlace(style)
-                        changeSelectedStopMarker(symbol)
+                        // TODO: Do something with the vehicle markers when clicked?
                     }
                 }
                 mapboxMap.addOnMapClickListener { latLng ->
-                    changeSelectedStopMarker(null)
                     routes_speed_dial.close()
                     searchView.closeSearch()
                     clearSelectedPlace(style)
                     val point = mapboxMap.projection.toScreenLocation(latLng)
+
+                    val tappedStops = mapboxMap.queryRenderedFeatures(point, STOPS_LAYER)
+                    if (tappedStops.isNotEmpty()) {
+                        setSelectedPlace(style, PlaceType.STOP, tappedStops.first())
+                        return@addOnMapClickListener true
+                    }
 
                     val tappedBuildings = mapboxMap.queryRenderedFeatures(point, BUILDINGS_LAYER)
                     if (tappedBuildings.isNotEmpty()) {
@@ -288,44 +290,61 @@ class MapFragment : Fragment() {
                         }
                     }
                     // Only add stops once, since they won't change while the app is running
-                    if (mapViewModel.stopMarkers.isEmpty()) {
+                    if (mapViewModel.stopCodeToMarkerDataMap.isEmpty()) {
                         for (route in routes) {
                             for (stop in route.stops) {
-                                val stopMarkerData =
-                                    mapViewModel.stopMarkers.values.firstOrNull { it.stop.stopId == stop.stopId }
-                                if (stopMarkerData != null) {
-                                    stopMarkerData.associatedRoutes.add(route)
-                                    stopMarkerData.arrivalEstimates.addAll(
+                                if (mapViewModel.stopCodeToMarkerDataMap[stop.stopId] == null) {
+                                    mapViewModel.stopCodeToMarkerDataMap[stop.stopId] =
+                                        StopMarkerData(stop)
+                                }
+                                mapViewModel.stopCodeToMarkerDataMap[stop.stopId]!!.run {
+                                    associatedRoutes.add(route)
+                                    arrivalEstimates.addAll(
                                         route.vehicles.flatMap { it.arrivalEstimates }
-                                            .filter { it.stopId == stopMarkerData.stop.stopId }
+                                            .filter { it.stopId == stop.stopId }
                                     )
-                                    continue
                                 }
-
                                 Log.d("MapFragment", "Added ${stop.name} (${stop.stopId})")
-                                symbolManager?.create(
-                                    SymbolOptions()
-                                        .withLatLng(LatLng(stop.location.lat, stop.location.lng))
-                                        .withIconColor("#ffa500")
-                                        .withIconImage(RUTGERS_STOP_ICON)
-                                )?.let { symbol ->
-                                    mapViewModel.stopMarkers.put(
-                                        symbol.id,
-                                        StopMarkerData(stop).apply {
-                                            associatedRoutes.add(route)
-                                            arrivalEstimates.addAll(
-                                                route.vehicles.flatMap { it.arrivalEstimates }
-                                                    .filter { it.stopId == stop.stopId }
-                                            )
-                                        }
+                            }
+                        }
+
+                        if (mapViewModel.stopCodeToMarkerDataMap.isNotEmpty()) {
+                            val busStopFeatures = mapViewModel.stopCodeToMarkerDataMap.values.map {
+                                Feature.fromGeometry(
+                                    Point.fromLngLat(
+                                        it.stop.location.lng,
+                                        it.stop.location.lat
                                     )
+                                ).apply {
+                                    addStringProperty(STOP_NAME, it.stop.name)
+                                    // TODO: Store stop data as feature properties instead?
                                 }
+                            }
+                            style.addSource(
+                                GeoJsonSource(
+                                    STOPS_SOURCE,
+                                    FeatureCollection.fromFeatures(busStopFeatures)
+                                )
+                            )
+                            SymbolLayer(STOPS_LAYER, STOPS_SOURCE).apply {
+                                setProperties(
+                                    PropertyFactory.iconColor("#ffa500"),
+                                    PropertyFactory.iconImage(RUTGERS_STOP_ICON),
+                                    PropertyFactory.iconAllowOverlap(true)
+                                )
+                                style.addLayerAbove(
+                                    this, when {
+                                        style.getLayer(BUILDINGS_LAYER) != null -> BUILDINGS_LAYER
+                                        else -> mapViewModel.firstLabelLayerId
+                                    }
+                                )
                             }
                         }
                     }
                 })
 
                 mapViewModel.viewModelScope.launch {
+                    // TODO: Make sure these fail gracefully
 //                    mapViewModel.getWalkways() // TODO: Do I have any use for the walkway data here?
                     val parkingLots = mapViewModel.getParkingLots()
                     val buildings = mapViewModel.getBuildings()
@@ -380,22 +399,17 @@ class MapFragment : Fragment() {
                 style.addSource(GeoJsonSource(BUILDINGS_SOURCE, URI(buildingsUrl)))
                 style.addSource(GeoJsonSource(PARKING_LOTS_SOURCE, URI(parkingLotsUrl)))
 
-                // This is my attempt to add the layers for the polygons at the right position -
-                // above the base map, streets, etc., but below any text labels.
-                // TODO: Is this the best way to do this? Does it work with all map styles?
-                val firstLabelLayerId = style.layers.first { it.id.contains("label") }.id
-
                 FillLayer(WALKWAYS_LAYER, WALKWAYS_SOURCE).apply {
                     setProperties(PropertyFactory.fillColor(0x88964b00.toInt()))
-                    style.addLayerBelow(this, firstLabelLayerId)
+                    style.addLayerBelow(this, mapViewModel.firstLabelLayerId)
                 }
                 parkingLayer = FillLayer(PARKING_LOTS_LAYER, PARKING_LOTS_SOURCE).apply {
                     setProperties(PropertyFactory.fillColor(0x88888888.toInt()))
-                    style.addLayerBelow(this, firstLabelLayerId)
+                    style.addLayerBelow(this, mapViewModel.firstLabelLayerId)
                 }
                 buildingLayer = FillLayer(BUILDINGS_LAYER, BUILDINGS_SOURCE).apply {
                     setProperties(PropertyFactory.fillColor(Color.BLACK))
-                    style.addLayerBelow(this, firstLabelLayerId)
+                    style.addLayerBelow(this, mapViewModel.firstLabelLayerId)
                 }
 
                 // Remove Mapbox Streets building stuff
