@@ -11,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.leinardi.android.speeddial.SpeedDialView
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
@@ -184,9 +185,16 @@ class MapFragment : Fragment() {
                     )
                 }
             }
+            // TODO: This will probably be its own fragment
+            map_bottom_sheet_text_view_1.text = feature.getNameForPlaceType(placeType)
+            map_bottom_sheet_text_view_2.text = "It's a " + when (placeType) {
+                PlaceType.WALKWAY -> throw IllegalStateException()
+                PlaceType.PARKING_LOT -> "parking lot"
+                PlaceType.BUILDING -> "building"
+                PlaceType.STOP -> "bus stop"
+            } + "!"
+            BottomSheetBehavior.from(map_bottom_sheet).state = BottomSheetBehavior.STATE_COLLAPSED
         }
-        selected_place_text_view.text = feature.getNameForPlaceType(placeType)
-        selected_place_text_view.visibility = View.VISIBLE
     }
 
     /**
@@ -197,13 +205,15 @@ class MapFragment : Fragment() {
         return style?.let { style ->
             val removedLayer = style.removeLayer(SELECTED_PLACE_LAYER)
             style.removeSource(SELECTED_PLACE_SOURCE)
-            selected_place_text_view.visibility = View.INVISIBLE
+            BottomSheetBehavior.from(map_bottom_sheet).state = BottomSheetBehavior.STATE_HIDDEN
             removedLayer
         } ?: false
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setHasOptionsMenu(true)
+        BottomSheetBehavior.from(map_bottom_sheet).state = BottomSheetBehavior.STATE_HIDDEN
+
         // We're doing this because we can't use synthetic properties in (at least) onDestroy()
         mapView = view.findViewById(R.id.map_view)
 
