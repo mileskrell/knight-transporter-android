@@ -28,7 +28,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
         if (search_view.isSearchOpen) {
             search_view.closeSearch()
         } else {
-            super.onBackPressed()
+            val f = nav_host_fragment.childFragmentManager.primaryNavigationFragment
+            if (f !is MapFragment || !f.clearSelectedPlace()) {
+                // If we didn't deselect anything, perform the default back button action
+                super.onBackPressed()
+            }
         }
     }
 
