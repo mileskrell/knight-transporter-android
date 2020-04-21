@@ -155,6 +155,7 @@ class MapFragment : Fragment() {
      * Clear selected place and select a new one
      */
     private fun setSelectedPlace(placeType: PlaceType, feature: Feature) {
+        // TODO: After tapping on multiple places in a row and then deselecting, the bottom sheet remains
         style?.let { style ->
             style.removeLayer(SELECTED_PLACE_LAYER)
             style.removeSource(SELECTED_PLACE_SOURCE)
@@ -213,6 +214,8 @@ class MapFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setHasOptionsMenu(true)
         BottomSheetBehavior.from(map_bottom_sheet).state = BottomSheetBehavior.STATE_HIDDEN
+        // Don't let gestures pass through bottom sheet to MapView
+        map_bottom_sheet.setOnTouchListener { _, _ -> true }
 
         // We're doing this because we can't use synthetic properties in (at least) onDestroy()
         mapView = view.findViewById(R.id.map_view)
