@@ -74,6 +74,7 @@ class MapFragment : Fragment() {
 
     private lateinit var mapView: MapView
     private lateinit var mapboxMap: MapboxMap
+    private var style: Style? = null
 
     private var parkingLayer: FillLayer? = null
     private var buildingLayer: FillLayer? = null
@@ -152,44 +153,53 @@ class MapFragment : Fragment() {
     /**
      * Clear selected place and select a new one
      */
-    private fun setSelectedPlace(style: Style, placeType: PlaceType, feature: Feature) {
-        style.removeLayer(SELECTED_PLACE_LAYER)
-        style.removeSource(SELECTED_PLACE_SOURCE)
-        style.addSource(GeoJsonSource(SELECTED_PLACE_SOURCE, feature))
-        if (placeType == PlaceType.STOP) {
-            SymbolLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).run {
-                setProperties(
-                    PropertyFactory.iconColor(0xFFFF00FF.toInt()),
-                    PropertyFactory.iconImage(RUTGERS_STOP_ICON),
-                    PropertyFactory.iconAllowOverlap(true)
-                )
-                // We definitely have a stops layer
-                style.addLayerAbove(this, STOPS_LAYER)
-            }
-        } else {
-            LineLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).run {
-                setProperties(
-                    PropertyFactory.lineColor(0xFFFF00FF.toInt()),
-                    PropertyFactory.lineWidth(5f)
-                )
-                // Add layer as high as possible
-                style.addLayerAbove(
-                    this, when {
-                        style.getLayer(STOPS_LAYER) != null -> STOPS_LAYER
-                        style.getLayer(BUILDINGS_LAYER) != null -> BUILDINGS_LAYER
-                        else -> mapViewModel.firstLabelLayerId
-                    }
-                )
+    private fun setSelectedPlace(placeType: PlaceType, feature: Feature) {
+        style?.let { style ->
+            style.removeLayer(SELECTED_PLACE_LAYER)
+            style.removeSource(SELECTED_PLACE_SOURCE)
+            style.addSource(GeoJsonSource(SELECTED_PLACE_SOURCE, feature))
+            if (placeType == PlaceType.STOP) {
+                SymbolLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).run {
+                    setProperties(
+                        PropertyFactory.iconColor(0xFFFF00FF.toInt()),
+                        PropertyFactory.iconImage(RUTGERS_STOP_ICON),
+                        PropertyFactory.iconAllowOverlap(true)
+                    )
+                    // We definitely have a stops layer
+                    style.addLayerAbove(this, STOPS_LAYER)
+                }
+            } else {
+                LineLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).run {
+                    setProperties(
+                        PropertyFactory.lineColor(0xFFFF00FF.toInt()),
+                        PropertyFactory.lineWidth(5f)
+                    )
+                    // Add layer as high as possible
+                    style.addLayerAbove(
+                        this, when {
+                            style.getLayer(STOPS_LAYER) != null -> STOPS_LAYER
+                            style.getLayer(BUILDINGS_LAYER) != null -> BUILDINGS_LAYER
+                            else -> mapViewModel.firstLabelLayerId
+                        }
+                    )
+                }
             }
         }
         selected_place_text_view.text = feature.getNameForPlaceType(placeType)
         selected_place_text_view.visibility = View.VISIBLE
     }
 
-    private fun clearSelectedPlace(style: Style) {
-        style.removeLayer(SELECTED_PLACE_LAYER)
-        style.removeSource(SELECTED_PLACE_SOURCE)
-        selected_place_text_view.visibility = View.INVISIBLE
+    /**
+     * Clear selected place (if any)
+     * @return whether a place was deselected
+     */
+    fun clearSelectedPlace(): Boolean {
+        return style?.let { style ->
+            val removedLayer = style.removeLayer(SELECTED_PLACE_LAYER)
+            style.removeSource(SELECTED_PLACE_SOURCE)
+            selected_place_text_view.visibility = View.INVISIBLE
+            removedLayer
+        } ?: false
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -209,6 +219,7 @@ class MapFragment : Fragment() {
                 override fun onMoveEnd(detector: MoveGestureDetector) {}
             })
             mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
+                this.style = style
                 // This is my attempt to add the layers for the polygons at the right position -
                 // above the base map, streets, etc., but below any text labels.
                 // TODO: Is this the best way to do this? Does it work with all map styles?
@@ -238,25 +249,25 @@ class MapFragment : Fragment() {
                 mapboxMap.addOnMapClickListener { latLng ->
                     routes_speed_dial.close()
                     searchView.closeSearch()
-                    clearSelectedPlace(style)
+                    clearSelectedPlace()
                     val point = mapboxMap.projection.toScreenLocation(latLng)
 
                     val tappedStops = mapboxMap.queryRenderedFeatures(point, STOPS_LAYER)
                     if (tappedStops.isNotEmpty()) {
-                        setSelectedPlace(style, PlaceType.STOP, tappedStops.first())
+                        setSelectedPlace(PlaceType.STOP, tappedStops.first())
                         return@addOnMapClickListener true
                     }
 
                     val tappedBuildings = mapboxMap.queryRenderedFeatures(point, BUILDINGS_LAYER)
                     if (tappedBuildings.isNotEmpty()) {
-                        setSelectedPlace(style, PlaceType.BUILDING, tappedBuildings.first())
+                        setSelectedPlace(PlaceType.BUILDING, tappedBuildings.first())
                         return@addOnMapClickListener true
                     }
 
                     val tappedParkingLots =
                         mapboxMap.queryRenderedFeatures(point, PARKING_LOTS_LAYER)
                     if (tappedParkingLots.isNotEmpty()) {
-                        setSelectedPlace(style, PlaceType.PARKING_LOT, tappedParkingLots.first())
+                        setSelectedPlace(PlaceType.PARKING_LOT, tappedParkingLots.first())
                         return@addOnMapClickListener true
                     }
 
@@ -383,7 +394,7 @@ class MapFragment : Fragment() {
                             )
                         )
                         val placeItem = adapter.getItem(position)
-                        setSelectedPlace(style, placeItem.placeType, placeItem.feature)
+                        setSelectedPlace(placeItem.placeType, placeItem.feature)
                     }
 
                     activity?.runOnUiThread {
