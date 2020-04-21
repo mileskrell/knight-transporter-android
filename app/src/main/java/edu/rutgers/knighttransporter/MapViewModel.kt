@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.mapbox.mapboxsdk.plugins.annotation.Symbol
 import edu.rutgers.knighttransporter.for_transloc.Route
 import edu.rutgers.knighttransporter.for_transloc.StopMarkerData
 
@@ -13,8 +12,11 @@ class MapViewModel : ViewModel() {
     val routes: LiveData<List<Route>>
         get() = _routes
 
-    val stopMarkers = mutableMapOf<Long, StopMarkerData>()
-    var selectedStopMarker: Symbol? = null
+    // From stop ID to StopMarkerData
+    val stopCodeToMarkerDataMap = mutableMapOf<Int, StopMarkerData>()
+
+    // Initialized as soon as the map's style is loaded
+    lateinit var firstLabelLayerId: String
 
     private val repository = Repository { newRoutes ->
         _routes.postValue(newRoutes)
