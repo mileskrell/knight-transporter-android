@@ -7,6 +7,7 @@ import android.view.*
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.commitNow
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.viewModelScope
@@ -37,9 +38,11 @@ import com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import com.miguelcatalan.materialsearchview.MaterialSearchView
+import edu.rutgers.knighttransporter.bottom_sheets.BuildingFragment
+import edu.rutgers.knighttransporter.bottom_sheets.ParkingLotFragment
+import edu.rutgers.knighttransporter.bottom_sheets.StopFragment
 import edu.rutgers.knighttransporter.for_non_mapbox_queries.PlaceType
 import edu.rutgers.knighttransporter.for_non_mapbox_queries.STOP_NAME
-import edu.rutgers.knighttransporter.for_non_mapbox_queries.getNameForPlaceType
 import edu.rutgers.knighttransporter.for_transloc.StopMarkerData
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_map.*
@@ -185,14 +188,19 @@ class MapFragment : Fragment() {
                     )
                 }
             }
-            // TODO: This will probably be its own fragment
-            map_bottom_sheet_text_view_1.text = feature.getNameForPlaceType(placeType)
-            map_bottom_sheet_text_view_2.text = "It's a " + when (placeType) {
-                PlaceType.WALKWAY -> throw IllegalStateException()
-                PlaceType.PARKING_LOT -> "parking lot"
-                PlaceType.BUILDING -> "building"
-                PlaceType.STOP -> "bus stop"
-            } + "!"
+            childFragmentManager.commitNow {
+                replace(
+                    R.id.map_bottom_sheet, when (placeType) {
+                        PlaceType.WALKWAY -> throw IllegalStateException("Bottom sheet should not be created for walkways")
+                        PlaceType.PARKING_LOT -> ParkingLotFragment.newInstance(
+                            feature.toJson()
+                        )
+                        PlaceType.BUILDING -> BuildingFragment.newInstance(feature.toJson())
+                        PlaceType.STOP -> StopFragment.newInstance(feature.toJson())
+                    }
+                )
+            }
+
             BottomSheetBehavior.from(map_bottom_sheet).state = BottomSheetBehavior.STATE_COLLAPSED
         }
     }
