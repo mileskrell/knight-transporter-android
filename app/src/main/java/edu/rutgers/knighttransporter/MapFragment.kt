@@ -82,7 +82,7 @@ class MapFragment : Fragment() {
     private var symbolManager: SymbolManager? = null
     private val vehicleMarkers = mutableListOf<Symbol>()
 
-    var speedDialWasClosedBecauseSearchViewWasOpened = false
+    private var speedDialWasClosedBecauseSearchViewWasOpened = false
 
     private val permissionsManager = PermissionsManager(object : PermissionsListener {
         override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
@@ -122,7 +122,7 @@ class MapFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
-    fun enableLocationComponent(style: Style) {
+    private fun enableLocationComponent(style: Style) {
         if (PermissionsManager.areLocationPermissionsGranted(requireContext())) {
             mapboxMap.locationComponent.apply {
                 activateLocationComponent(
