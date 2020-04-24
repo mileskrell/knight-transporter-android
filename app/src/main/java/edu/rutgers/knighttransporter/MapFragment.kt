@@ -155,7 +155,6 @@ class MapFragment : Fragment() {
      * Clear selected place and select a new one
      */
     private fun setSelectedPlace(placeType: PlaceType, feature: Feature) {
-        // TODO: After tapping on multiple places in a row and then deselecting, the bottom sheet remains
         style?.let { style ->
             style.removeLayer(SELECTED_PLACE_LAYER)
             style.removeSource(SELECTED_PLACE_SOURCE)
@@ -262,7 +261,6 @@ class MapFragment : Fragment() {
                 mapboxMap.addOnMapClickListener { latLng ->
                     routes_speed_dial.close()
                     searchView.closeSearch()
-                    clearSelectedPlace()
                     val point = mapboxMap.projection.toScreenLocation(latLng)
 
                     val tappedStops = mapboxMap.queryRenderedFeatures(point, STOPS_LAYER)
@@ -284,6 +282,7 @@ class MapFragment : Fragment() {
                         return@addOnMapClickListener true
                     }
 
+                    clearSelectedPlace()
                     false
                 }
 
