@@ -15,6 +15,7 @@ import edu.rutgers.knighttransporter.feature_stuff.BUILDING_ADDRESS
 import edu.rutgers.knighttransporter.feature_stuff.BUILDING_NAME
 import edu.rutgers.knighttransporter.feature_stuff.BUILDING_NUMBER
 import edu.rutgers.knighttransporter.feature_stuff.CITY
+import edu.rutgers.knighttransporter.feature_stuff.STATE
 import kotlinx.android.synthetic.main.fragment_place_sheet_building.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -51,8 +52,8 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
             place_sheet_building_image.contentDescription = "Photo of $buildingName"
         }
 
-        place_sheet_building_address.text =
-            "${building.getStringProperty(BUILDING_ADDRESS)}, ${building.getStringProperty(CITY)}"
+        place_sheet_building_address.text = "${building.getStringProperty(BUILDING_ADDRESS)}\n" +
+                "${building.getStringProperty(CITY)}, ${building.getStringProperty(STATE)}"
 
         val buildingNumber = building.getNumberProperty(BUILDING_NUMBER)
 
@@ -80,7 +81,7 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
                     visibility = View.VISIBLE
                 }
             }
-            place_sheet_building_address.append(", ${details.zip}")
+            place_sheet_building_address.append(" ${details.zip}")
         }
     }
 }
