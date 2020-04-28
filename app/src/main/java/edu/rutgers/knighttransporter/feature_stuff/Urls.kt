@@ -1,4 +1,4 @@
-package edu.rutgers.knighttransporter
+package edu.rutgers.knighttransporter.feature_stuff
 
 const val xMin = "-75.314648"
 const val yMin = "39.844001"
@@ -10,8 +10,8 @@ const val arcGISbaseUrl = "https://services1.arcgis.com/ze0XBzU1FXj94DJq/arcgis/
 
 // Also used by Retrofit
 const val walkwaysPath = "Rutgers_University_Walkways/FeatureServer/0/query?$commonParams&outFields=" // outFields=Site_ID%2CDistrict or whatever we want to use
-const val buildingsPath = "Rutgers_University_Buildings/FeatureServer/0/query?$commonParams&resultType=none&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=BldgName%2C+BldgNum%2C+Latitude%2C+Longitude&returnGeometry=true&returnCentroid=false&featureEncoding=esriDefault&multipatchOption=xyFootprint&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&cacheHint=false&returnZ=false&returnM=false&returnExceededLimitFeatures=true&sqlFormat=none"
-const val parkingLotsPath = "Rutgers_University_Parking/FeatureServer/0/query?$commonParams&outFields=Parking_ID%2C%20Lot_Name%2C%20Latitude%2C%20Longitude&where=1%3D1"
+const val buildingsPath = "Rutgers_University_Buildings/FeatureServer/0/query?$commonParams&resultType=none&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=$BUILDING_NAME%2C+$BUILDING_NUMBER%2C+$LATITUDE%2C+$LONGITUDE&returnGeometry=true&returnCentroid=false&featureEncoding=esriDefault&multipatchOption=xyFootprint&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&cacheHint=false&returnZ=false&returnM=false&returnExceededLimitFeatures=true&sqlFormat=none"
+const val parkingLotsPath = "Rutgers_University_Parking/FeatureServer/0/query?$commonParams&outFields=$PARKING_ID%2C%20$LOT_NAME%2C%20$LATITUDE%2C%20$LONGITUDE&where=1%3D1"
 
 const val walkwaysUrl = arcGISbaseUrl + walkwaysPath
 const val buildingsUrl = arcGISbaseUrl + buildingsPath

@@ -10,7 +10,7 @@ import android.widget.*
 import com.mapbox.geojson.Feature
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.miguelcatalan.materialsearchview.R
-import edu.rutgers.knighttransporter.for_non_mapbox_queries.*
+import edu.rutgers.knighttransporter.feature_stuff.*
 import java.util.*
 
 /**

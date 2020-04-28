@@ -4,7 +4,9 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.mapbox.geojson.FeatureCollection
-import edu.rutgers.knighttransporter.for_non_mapbox_queries.GeoJSONService
+import edu.rutgers.knighttransporter.feature_stuff.GeoJSONService
+import edu.rutgers.knighttransporter.feature_stuff.arcGISbaseUrl
+import edu.rutgers.knighttransporter.feature_stuff.translocUrl
 import edu.rutgers.knighttransporter.for_transloc.Route
 import io.socket.client.IO
 import io.socket.client.Socket

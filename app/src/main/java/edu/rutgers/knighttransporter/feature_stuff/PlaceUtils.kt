@@ -1,4 +1,4 @@
-package edu.rutgers.knighttransporter.for_non_mapbox_queries
+package edu.rutgers.knighttransporter.feature_stuff
 
 import com.mapbox.geojson.Feature
 
@@ -13,7 +13,7 @@ fun Feature.getNameForPlaceType(placeType: PlaceType) = when (placeType) {
     PlaceType.STOP -> getStringProperty(STOP_NAME) ?: "Unnamed stop"
 }
 
-// Properties
+// Feature properties
 
 // Buildings and parking lots
 const val LATITUDE = "Latitude"
