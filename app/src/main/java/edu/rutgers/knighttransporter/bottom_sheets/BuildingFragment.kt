@@ -7,7 +7,10 @@ import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.mapbox.geojson.Feature
 import edu.rutgers.knighttransporter.R
-import edu.rutgers.knighttransporter.feature_stuff.*
+import edu.rutgers.knighttransporter.feature_stuff.BUILDING_ADDRESS
+import edu.rutgers.knighttransporter.feature_stuff.BUILDING_NAME
+import edu.rutgers.knighttransporter.feature_stuff.BUILDING_NUMBER
+import edu.rutgers.knighttransporter.feature_stuff.CITY
 import kotlinx.android.synthetic.main.fragment_place_sheet_building.*
 
 class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
@@ -33,7 +36,7 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        building.getNameForPlaceType(PlaceType.BUILDING).let { buildingName ->
+        building.getStringProperty(BUILDING_NAME).let { buildingName ->
             place_sheet_building_name.text = buildingName
             place_sheet_building_image.contentDescription = "Photo of $buildingName"
         }
