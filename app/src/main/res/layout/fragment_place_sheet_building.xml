@@ -13,6 +13,7 @@
         android:layout_height="80dp"
         android:background="@color/pantone7501"
         android:gravity="center"
+        android:paddingHorizontal="8dp"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintEnd_toEndOf="parent"
