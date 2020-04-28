@@ -7,8 +7,8 @@ import android.view.*
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commitNow
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
@@ -73,7 +73,7 @@ class MapFragment : Fragment() {
     private lateinit var toolbar: Toolbar
     private lateinit var searchView: MaterialSearchView
 
-    private val mapViewModel: MapViewModel by viewModels()
+    private val mapViewModel: MapViewModel by activityViewModels()
 
     private lateinit var mapView: MapView
     private lateinit var mapboxMap: MapboxMap
