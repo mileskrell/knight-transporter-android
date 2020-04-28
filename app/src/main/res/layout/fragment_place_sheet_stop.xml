@@ -2,28 +2,19 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="240dp"
+    android:layout_height="match_parent"
     android:background="#fafafa">
 
     <TextView
         android:id="@+id/place_sheet_stop_name"
         android:layout_width="match_parent"
         android:layout_height="80dp"
-        android:background="#4db6ac"
+        android:background="@color/pantone7501"
         android:gravity="center"
+        android:paddingHorizontal="8dp"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/place_sheet_stop_desc"
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:background="#81c784"
-        android:gravity="center"
-        android:text="This is the stop layout"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintBottom_toBottomOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
