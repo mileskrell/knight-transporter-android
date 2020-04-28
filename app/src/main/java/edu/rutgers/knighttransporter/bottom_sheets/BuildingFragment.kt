@@ -3,6 +3,7 @@ package edu.rutgers.knighttransporter.bottom_sheets
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.mapbox.geojson.Feature
 import edu.rutgers.knighttransporter.R
@@ -38,16 +39,15 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
 
         val buildingNumber = building.getNumberProperty(BUILDING_NUMBER)
 
-        // TODO: Get placeholder to work
-//        val progressDrawable = CircularProgressDrawable(requireContext()).apply {
-//            strokeWidth = 5f
-//            centerRadius = 30f
-//            start()
-//        }
+        val progressDrawable = CircularProgressDrawable(requireContext()).apply {
+            setStyle(CircularProgressDrawable.LARGE)
+            start()
+        }
 
         Glide.with(this)
             .load("https://storage.googleapis.com/rutgers-campus-map-building-images-prod/$buildingNumber/00.jpg")
-//            .placeholder(progressDrawable)
+            .centerCrop()
+            .placeholder(progressDrawable)
             .into(place_sheet_building_image)
 
     }
