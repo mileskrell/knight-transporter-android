@@ -67,6 +67,9 @@ dependencies {
     implementation "com.squareup.retrofit2:retrofit:2.8.1"
     implementation "com.squareup.retrofit2:converter-scalars:2.8.1"
 
+    def markwon_version = '4.3.1'
+    implementation "io.noties.markwon:core:$markwon_version"
+
     implementation("io.socket:socket.io-client:1.0.0") {
         // excluding org.json which is provided by Android
         exclude group: "org.json", module: "json"
