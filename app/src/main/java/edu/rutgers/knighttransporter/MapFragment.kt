@@ -41,8 +41,7 @@ import com.miguelcatalan.materialsearchview.MaterialSearchView
 import edu.rutgers.knighttransporter.bottom_sheets.BuildingFragment
 import edu.rutgers.knighttransporter.bottom_sheets.ParkingLotFragment
 import edu.rutgers.knighttransporter.bottom_sheets.StopFragment
-import edu.rutgers.knighttransporter.for_non_mapbox_queries.PlaceType
-import edu.rutgers.knighttransporter.for_non_mapbox_queries.STOP_NAME
+import edu.rutgers.knighttransporter.feature_stuff.*
 import edu.rutgers.knighttransporter.for_transloc.StopMarkerData
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_map.*

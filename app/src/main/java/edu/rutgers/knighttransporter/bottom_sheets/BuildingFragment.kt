@@ -7,9 +7,9 @@ import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.mapbox.geojson.Feature
 import edu.rutgers.knighttransporter.R
-import edu.rutgers.knighttransporter.for_non_mapbox_queries.BUILDING_NUMBER
-import edu.rutgers.knighttransporter.for_non_mapbox_queries.PlaceType
-import edu.rutgers.knighttransporter.for_non_mapbox_queries.getNameForPlaceType
+import edu.rutgers.knighttransporter.feature_stuff.BUILDING_NUMBER
+import edu.rutgers.knighttransporter.feature_stuff.PlaceType
+import edu.rutgers.knighttransporter.feature_stuff.getNameForPlaceType
 import kotlinx.android.synthetic.main.fragment_place_sheet_building.*
 
 class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
