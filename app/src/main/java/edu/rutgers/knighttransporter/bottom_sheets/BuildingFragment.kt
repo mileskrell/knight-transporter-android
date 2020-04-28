@@ -35,7 +35,10 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        place_sheet_building_name.text = building.getNameForPlaceType(PlaceType.BUILDING)
+        building.getNameForPlaceType(PlaceType.BUILDING).let { buildingName ->
+            place_sheet_building_name.text = buildingName
+            place_sheet_building_image.contentDescription = "Photo of $buildingName"
+        }
 
         val buildingNumber = building.getNumberProperty(BUILDING_NUMBER)
 
