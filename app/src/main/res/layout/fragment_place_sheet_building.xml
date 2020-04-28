@@ -29,10 +29,20 @@
 
     <TextView
         android:id="@+id/place_sheet_building_address"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:padding="8dp"
+        android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/place_sheet_building_image"
         app:layout_constraintTop_toBottomOf="@id/place_sheet_building_name" />
+
+    <TextView
+        android:id="@+id/place_sheet_building_departments"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/place_sheet_building_image" />
 </androidx.constraintlayout.widget.ConstraintLayout>

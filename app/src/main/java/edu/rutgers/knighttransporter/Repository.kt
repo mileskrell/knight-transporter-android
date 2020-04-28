@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.mapbox.geojson.FeatureCollection
+import edu.rutgers.knighttransporter.bottom_sheets.RutgersMapDetailsService
 import edu.rutgers.knighttransporter.feature_stuff.GeoJSONService
 import edu.rutgers.knighttransporter.feature_stuff.arcGISbaseUrl
 import edu.rutgers.knighttransporter.feature_stuff.translocUrl
@@ -12,6 +13,7 @@ import io.socket.client.IO
 import io.socket.client.Socket
 import org.json.JSONArray
 import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 
 class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
@@ -50,6 +52,12 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
         .build()
         .create(GeoJSONService::class.java)
 
+    val rutgersMapDetailsService = Retrofit.Builder()
+        .baseUrl(RutgersMapDetailsService.BASE_URL)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(RutgersMapDetailsService::class.java)
+
     suspend fun getWalkways() = walkways ?: geoJSONService.getWalkways().let {
         return FeatureCollection.fromJson(it)
     }
@@ -61,4 +69,6 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
     suspend fun getBuildings() = buildings ?: geoJSONService.getBuildings().let {
         return FeatureCollection.fromJson(it)
     }
+
+    suspend fun getBuildingDetails(buildingCode: Int) = rutgersMapDetailsService.getBuildingDetails(buildingCode)
 }

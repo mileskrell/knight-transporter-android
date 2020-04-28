@@ -28,12 +28,12 @@ fun createRutgersMarkwon(context: Context) = Markwon.builder(context)
             }
         }
 
-        // Add some space between list items
-        override fun configureSpansFactory(builder: MarkwonSpansFactory.Builder) {
-            builder.prependFactory(ListItem::class.java) { _: MarkwonConfiguration, _: RenderProps ->
-                FirstLineSpacingSpan(context, 14f)
-            }
-        }
+//        // Add some space between list items
+//        override fun configureSpansFactory(builder: MarkwonSpansFactory.Builder) {
+//            builder.prependFactory(ListItem::class.java) { _: MarkwonConfiguration, _: RenderProps ->
+//                FirstLineSpacingSpan(context, 14f)
+//            }
+//        }
     })
     .build()
 

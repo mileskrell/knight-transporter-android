@@ -29,4 +29,6 @@ class MapViewModel : ViewModel() {
     suspend fun getParkingLots() = repository.getParkingLots()
 
     suspend fun getBuildings() = repository.getBuildings()
+
+    suspend fun getBuildingDetails(buildingCode: Int) = repository.getBuildingDetails(buildingCode)
 }
