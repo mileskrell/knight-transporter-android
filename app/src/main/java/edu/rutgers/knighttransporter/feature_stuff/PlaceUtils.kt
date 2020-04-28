@@ -24,6 +24,7 @@ const val BUILDING_NAME = "BldgName"
 const val BUILDING_NUMBER = "BldgNum"
 const val BUILDING_ADDRESS = "BldgAddr"
 const val CITY = "City"
+const val STATE = "State"
 
 // Parking lots
 const val PARKING_ID = "Parking_ID"
