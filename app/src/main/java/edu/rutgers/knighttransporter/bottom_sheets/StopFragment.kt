@@ -5,8 +5,7 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import com.mapbox.geojson.Feature
 import edu.rutgers.knighttransporter.R
-import edu.rutgers.knighttransporter.feature_stuff.PlaceType
-import edu.rutgers.knighttransporter.feature_stuff.getNameForPlaceType
+import edu.rutgers.knighttransporter.feature_stuff.STOP_NAME
 import kotlinx.android.synthetic.main.fragment_place_sheet_stop.*
 
 class StopFragment : Fragment(R.layout.fragment_place_sheet_stop) {
@@ -32,6 +31,6 @@ class StopFragment : Fragment(R.layout.fragment_place_sheet_stop) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        place_sheet_stop_name.text = feature.getNameForPlaceType(PlaceType.STOP)
+        place_sheet_stop_name.text = feature.getStringProperty(STOP_NAME)
     }
 }
