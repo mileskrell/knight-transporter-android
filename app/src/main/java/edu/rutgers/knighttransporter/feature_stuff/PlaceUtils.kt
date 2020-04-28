@@ -28,6 +28,8 @@ const val CITY = "City"
 // Parking lots
 const val PARKING_ID = "Parking_ID"
 const val LOT_NAME = "Lot_Name"
+const val CONTACT = "Contact"
+const val WEBSITE = "Website"
 
 // Stops
 const val STOP_NAME = "stop name"
