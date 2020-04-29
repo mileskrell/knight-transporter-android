@@ -30,14 +30,26 @@
         tools:src="@tools:sample/backgrounds/scenic" />
 
     <TextView
-        android:id="@+id/place_sheet_building_address"
+        android:id="@+id/place_sheet_building_number"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="8dp"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/place_sheet_building_image"
-        app:layout_constraintTop_toBottomOf="@id/place_sheet_building_name"
+        app:layout_constraintTop_toTopOf="@id/place_sheet_building_image"
+        tools:text="Building number: 3752" />
+
+    <TextView
+        android:id="@+id/place_sheet_building_address"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="8dp"
+        android:paddingBottom="8dp"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/place_sheet_building_image"
+        app:layout_constraintTop_toBottomOf="@id/place_sheet_building_number"
         tools:text="110 Frelinghuysen Road\nPiscataway, NJ 08854-8019" />
 
     <TextView
@@ -47,7 +59,7 @@
         android:padding="8dp"
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/place_sheet_building_image"
+        app:layout_constraintTop_toBottomOf="@id/place_sheet_building_address"
         tools:text="Departments\n• NB SAS Some dept.\n• IP&amp;O Something\n• OIT Another thing"
         tools:visibility="visible" />
 </androidx.constraintlayout.widget.ConstraintLayout>
