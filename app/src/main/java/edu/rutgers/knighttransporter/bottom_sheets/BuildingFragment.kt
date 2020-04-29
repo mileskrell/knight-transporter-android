@@ -52,10 +52,12 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
             place_sheet_building_image.contentDescription = "Photo of $buildingName"
         }
 
+        val buildingNumber = building.getNumberProperty(BUILDING_NUMBER)
+
+        place_sheet_building_number.text = "Building number: $buildingNumber"
+
         place_sheet_building_address.text = "${building.getStringProperty(BUILDING_ADDRESS)}\n" +
                 "${building.getStringProperty(CITY)}, ${building.getStringProperty(STATE)}"
-
-        val buildingNumber = building.getNumberProperty(BUILDING_NUMBER)
 
         val progressDrawable = CircularProgressDrawable(requireContext()).apply {
             setStyle(CircularProgressDrawable.LARGE)
