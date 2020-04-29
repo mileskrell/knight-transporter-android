@@ -17,7 +17,8 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Hill Center for the Mathematical Sciences" />
 
     <ImageView
         android:id="@+id/place_sheet_building_image"
@@ -25,7 +26,8 @@
         android:layout_height="80dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/place_sheet_building_name"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"
+        tools:src="@tools:sample/backgrounds/scenic" />
 
     <TextView
         android:id="@+id/place_sheet_building_address"
@@ -35,7 +37,8 @@
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/place_sheet_building_image"
-        app:layout_constraintTop_toBottomOf="@id/place_sheet_building_name" />
+        app:layout_constraintTop_toBottomOf="@id/place_sheet_building_name"
+        tools:text="110 Frelinghuysen Road\nPiscataway, NJ 08854-8019" />
 
     <TextView
         android:id="@+id/place_sheet_building_departments"
@@ -44,5 +47,7 @@
         android:padding="8dp"
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/place_sheet_building_image" />
+        app:layout_constraintTop_toBottomOf="@id/place_sheet_building_image"
+        tools:text="Departments\n• NB SAS Some dept.\n• IP&amp;O Something\n• OIT Another thing"
+        tools:visibility="visible" />
 </androidx.constraintlayout.widget.ConstraintLayout>
