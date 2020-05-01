@@ -162,35 +162,32 @@ class MapFragment : Fragment() {
             style.addSource(GeoJsonSource(SELECTED_PLACE_SOURCE, feature))
             when (placeType) {
                 PlaceType.STOP -> {
-                    SymbolLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).run {
-                        setProperties(
-                            PropertyFactory.iconColor(0xFFFF00FF.toInt()),
-                            PropertyFactory.iconImage(RUTGERS_STOP_ICON),
-                            PropertyFactory.iconAllowOverlap(true)
-                        )
+                    SymbolLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).withProperties(
+                        PropertyFactory.iconColor(0xFFFF00FF.toInt()),
+                        PropertyFactory.iconImage(RUTGERS_STOP_ICON),
+                        PropertyFactory.iconAllowOverlap(true)
+                    ).run {
                         // We definitely have a stops layer
                         style.addLayerAbove(this, STOPS_LAYER)
                     }
                 }
                 PlaceType.VEHICLE -> {
-                    SymbolLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).run {
-                        setProperties(
-                            PropertyFactory.iconColor(0xFFFF00FF.toInt()),
-                            PropertyFactory.iconImage(RUTGERS_BUS_ICON),
-                            PropertyFactory.iconRotate(get(HEADING)),
-                            PropertyFactory.iconSize(1.5f),
-                            PropertyFactory.iconAllowOverlap(true)
-                        )
+                    SymbolLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).withProperties(
+                        PropertyFactory.iconColor(0xFFFF00FF.toInt()),
+                        PropertyFactory.iconImage(RUTGERS_BUS_ICON),
+                        PropertyFactory.iconRotate(get(HEADING)),
+                        PropertyFactory.iconSize(1.5f),
+                        PropertyFactory.iconAllowOverlap(true)
+                    ).run {
                         // We definitely have a vehicles layer
                         style.addLayerAbove(this, VEHICLES_LAYER)
                     }
                 }
                 else -> {
-                    LineLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).run {
-                        setProperties(
-                            PropertyFactory.lineColor(0xFFFF00FF.toInt()),
-                            PropertyFactory.lineWidth(5f)
-                        )
+                    LineLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).withProperties(
+                        PropertyFactory.lineColor(0xFFFF00FF.toInt()),
+                        PropertyFactory.lineWidth(5f)
+                    ).run {
                         // Add layer as high as possible
                         style.addLayerAbove(
                             this, when {
@@ -359,12 +356,11 @@ class MapFragment : Fragment() {
                                     FeatureCollection.fromFeatures(busStopFeatures)
                                 )
                             )
-                            SymbolLayer(STOPS_LAYER, STOPS_SOURCE).apply {
-                                setProperties(
-                                    PropertyFactory.iconColor("#ffa500"),
-                                    PropertyFactory.iconImage(RUTGERS_STOP_ICON),
-                                    PropertyFactory.iconAllowOverlap(true)
-                                )
+                            SymbolLayer(STOPS_LAYER, STOPS_SOURCE).withProperties(
+                                PropertyFactory.iconColor("#ffa500"),
+                                PropertyFactory.iconImage(RUTGERS_STOP_ICON),
+                                PropertyFactory.iconAllowOverlap(true)
+                            ).run {
                                 style.addLayerAbove(
                                     this, when {
                                         style.getLayer(BUILDINGS_LAYER) != null -> BUILDINGS_LAYER
@@ -399,13 +395,12 @@ class MapFragment : Fragment() {
                             FeatureCollection.fromFeatures(vehicleFeatures)
                         )
                     )
-                    SymbolLayer(VEHICLES_LAYER, VEHICLES_SOURCE).apply {
-                        setProperties(
-                            PropertyFactory.iconImage(RUTGERS_BUS_ICON),
-                            PropertyFactory.iconRotate(get(HEADING)),
-                            PropertyFactory.iconSize(1.5f),
-                            PropertyFactory.iconAllowOverlap(true)
-                        )
+                    SymbolLayer(VEHICLES_LAYER, VEHICLES_SOURCE).withProperties(
+                        PropertyFactory.iconImage(RUTGERS_BUS_ICON),
+                        PropertyFactory.iconRotate(get(HEADING)),
+                        PropertyFactory.iconSize(1.5f),
+                        PropertyFactory.iconAllowOverlap(true)
+                    ).run {
                         style.addLayerAbove(
                             this, when {
                                 style.getLayer(STOPS_LAYER) != null -> STOPS_LAYER
@@ -472,18 +467,18 @@ class MapFragment : Fragment() {
                 style.addSource(GeoJsonSource(BUILDINGS_SOURCE, URI(buildingsUrl)))
                 style.addSource(GeoJsonSource(PARKING_LOTS_SOURCE, URI(parkingLotsUrl)))
 
-                FillLayer(WALKWAYS_LAYER, WALKWAYS_SOURCE).apply {
-                    setProperties(PropertyFactory.fillColor(0x88964b00.toInt()))
-                    style.addLayerBelow(this, mapViewModel.firstLabelLayerId)
-                }
-                parkingLayer = FillLayer(PARKING_LOTS_LAYER, PARKING_LOTS_SOURCE).apply {
-                    setProperties(PropertyFactory.fillColor(0x88888888.toInt()))
-                    style.addLayerBelow(this, mapViewModel.firstLabelLayerId)
-                }
-                buildingLayer = FillLayer(BUILDINGS_LAYER, BUILDINGS_SOURCE).apply {
-                    setProperties(PropertyFactory.fillColor(Color.BLACK))
-                    style.addLayerBelow(this, mapViewModel.firstLabelLayerId)
-                }
+                FillLayer(WALKWAYS_LAYER, WALKWAYS_SOURCE)
+                    .withProperties(PropertyFactory.fillColor(0x88964b00.toInt())).run {
+                        style.addLayerBelow(this, mapViewModel.firstLabelLayerId)
+                    }
+                parkingLayer = FillLayer(PARKING_LOTS_LAYER, PARKING_LOTS_SOURCE)
+                    .withProperties(PropertyFactory.fillColor(0x88888888.toInt())).apply {
+                        style.addLayerBelow(this, mapViewModel.firstLabelLayerId)
+                    }
+                buildingLayer = FillLayer(BUILDINGS_LAYER, BUILDINGS_SOURCE)
+                    .withProperties(PropertyFactory.fillColor(Color.BLACK)).apply {
+                        style.addLayerBelow(this, mapViewModel.firstLabelLayerId)
+                    }
 
                 // Remove Mapbox Streets building stuff
                 style.removeLayer("building")
