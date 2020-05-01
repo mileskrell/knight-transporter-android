@@ -3,7 +3,7 @@ package edu.rutgers.knighttransporter.feature_stuff
 import com.mapbox.geojson.Feature
 
 enum class PlaceType {
-    WALKWAY, PARKING_LOT, BUILDING, STOP
+    WALKWAY, PARKING_LOT, BUILDING, STOP, VEHICLE
 }
 
 fun Feature.getNameForPlaceType(placeType: PlaceType) = when (placeType) {
@@ -11,6 +11,7 @@ fun Feature.getNameForPlaceType(placeType: PlaceType) = when (placeType) {
     PlaceType.PARKING_LOT -> getStringProperty(LOT_NAME) ?: "Unnamed parking lot"
     PlaceType.BUILDING -> getStringProperty(BUILDING_NAME) ?: "Unnamed building"
     PlaceType.STOP -> getStringProperty(STOP_NAME) ?: "Unnamed stop"
+    PlaceType.VEHICLE -> throw IllegalStateException("This method shouldn't be called on vehicles")
 }
 
 // Feature properties
@@ -34,3 +35,9 @@ const val WEBSITE = "Website"
 
 // Stops
 const val STOP_NAME = "stop name"
+
+// Vehicles
+const val ROUTE_NAME = "route name"
+const val VEHICLE_ID = "vehicle ID"
+const val HEADING = "heading"
+const val COLOR = "color"

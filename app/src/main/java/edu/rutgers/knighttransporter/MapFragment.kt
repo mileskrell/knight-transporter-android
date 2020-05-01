@@ -30,9 +30,7 @@ import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
-import com.mapbox.mapboxsdk.plugins.annotation.Symbol
-import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
-import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
+import com.mapbox.mapboxsdk.style.expressions.Expression.get
 import com.mapbox.mapboxsdk.style.layers.*
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
@@ -41,6 +39,7 @@ import com.miguelcatalan.materialsearchview.MaterialSearchView
 import edu.rutgers.knighttransporter.bottom_sheets.BuildingFragment
 import edu.rutgers.knighttransporter.bottom_sheets.ParkingLotFragment
 import edu.rutgers.knighttransporter.bottom_sheets.StopFragment
+import edu.rutgers.knighttransporter.bottom_sheets.VehicleFragment
 import edu.rutgers.knighttransporter.feature_stuff.*
 import edu.rutgers.knighttransporter.for_transloc.StopMarkerData
 import kotlinx.android.synthetic.main.activity_main.*
@@ -64,6 +63,8 @@ class MapFragment : Fragment() {
         const val BUILDINGS_LAYER = "rBuildings-layer"
         const val STOPS_SOURCE = "rStops-source"
         const val STOPS_LAYER = "rStops-layer"
+        const val VEHICLES_SOURCE = "rVehicles-source"
+        const val VEHICLES_LAYER = "rVehicles-layer"
         const val SELECTED_PLACE_SOURCE = "rSelectedPlace-source"
         const val SELECTED_PLACE_LAYER = "rSelectedPlace-layer"
         const val RUTGERS_BUS_ICON = "rutgers-bus-icon"
@@ -81,8 +82,6 @@ class MapFragment : Fragment() {
 
     private var parkingLayer: FillLayer? = null
     private var buildingLayer: FillLayer? = null
-    private var symbolManager: SymbolManager? = null
-    private val vehicleMarkers = mutableListOf<Symbol>()
 
     private var speedDialWasClosedBecauseSearchViewWasOpened = false
 
@@ -161,30 +160,47 @@ class MapFragment : Fragment() {
             style.removeLayer(SELECTED_PLACE_LAYER)
             style.removeSource(SELECTED_PLACE_SOURCE)
             style.addSource(GeoJsonSource(SELECTED_PLACE_SOURCE, feature))
-            if (placeType == PlaceType.STOP) {
-                SymbolLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).run {
-                    setProperties(
-                        PropertyFactory.iconColor(0xFFFF00FF.toInt()),
-                        PropertyFactory.iconImage(RUTGERS_STOP_ICON),
-                        PropertyFactory.iconAllowOverlap(true)
-                    )
-                    // We definitely have a stops layer
-                    style.addLayerAbove(this, STOPS_LAYER)
+            when (placeType) {
+                PlaceType.STOP -> {
+                    SymbolLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).run {
+                        setProperties(
+                            PropertyFactory.iconColor(0xFFFF00FF.toInt()),
+                            PropertyFactory.iconImage(RUTGERS_STOP_ICON),
+                            PropertyFactory.iconAllowOverlap(true)
+                        )
+                        // We definitely have a stops layer
+                        style.addLayerAbove(this, STOPS_LAYER)
+                    }
                 }
-            } else {
-                LineLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).run {
-                    setProperties(
-                        PropertyFactory.lineColor(0xFFFF00FF.toInt()),
-                        PropertyFactory.lineWidth(5f)
-                    )
-                    // Add layer as high as possible
-                    style.addLayerAbove(
-                        this, when {
-                            style.getLayer(STOPS_LAYER) != null -> STOPS_LAYER
-                            style.getLayer(BUILDINGS_LAYER) != null -> BUILDINGS_LAYER
-                            else -> mapViewModel.firstLabelLayerId
-                        }
-                    )
+                PlaceType.VEHICLE -> {
+                    SymbolLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).run {
+                        setProperties(
+                            PropertyFactory.iconColor(0xFFFF00FF.toInt()),
+                            PropertyFactory.iconImage(RUTGERS_BUS_ICON),
+                            PropertyFactory.iconRotate(get(HEADING)),
+                            PropertyFactory.iconSize(1.5f),
+                            PropertyFactory.iconAllowOverlap(true)
+                        )
+                        // We definitely have a vehicles layer
+                        style.addLayerAbove(this, VEHICLES_LAYER)
+                    }
+                }
+                else -> {
+                    LineLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).run {
+                        setProperties(
+                            PropertyFactory.lineColor(0xFFFF00FF.toInt()),
+                            PropertyFactory.lineWidth(5f)
+                        )
+                        // Add layer as high as possible
+                        style.addLayerAbove(
+                            this, when {
+                                style.getLayer(VEHICLES_LAYER) != null -> VEHICLES_LAYER
+                                style.getLayer(STOPS_LAYER) != null -> STOPS_LAYER
+                                style.getLayer(BUILDINGS_LAYER) != null -> BUILDINGS_LAYER
+                                else -> mapViewModel.firstLabelLayerId
+                            }
+                        )
+                    }
                 }
             }
             childFragmentManager.commitNow {
@@ -196,6 +212,7 @@ class MapFragment : Fragment() {
                         )
                         PlaceType.BUILDING -> BuildingFragment.newInstance(feature.toJson())
                         PlaceType.STOP -> StopFragment.newInstance(feature.toJson())
+                        PlaceType.VEHICLE -> VehicleFragment.newInstance(feature.toJson())
                     }
                 )
             }
@@ -259,16 +276,16 @@ class MapFragment : Fragment() {
                     )!!,
                     true // This lets us change its color
                 )
-                symbolManager = SymbolManager(mapView, mapboxMap, style).apply {
-                    iconAllowOverlap = true
-                    addClickListener { symbol ->
-                        // TODO: Do something with the vehicle markers when clicked?
-                    }
-                }
                 mapboxMap.addOnMapClickListener { latLng ->
                     routes_speed_dial.close()
                     searchView.closeSearch()
                     val point = mapboxMap.projection.toScreenLocation(latLng)
+
+                    val tappedVehicles = mapboxMap.queryRenderedFeatures(point, VEHICLES_LAYER)
+                    if (tappedVehicles.isNotEmpty()) {
+                        setSelectedPlace(PlaceType.VEHICLE, tappedVehicles.first())
+                        return@addOnMapClickListener true
+                    }
 
                     val tappedStops = mapboxMap.queryRenderedFeatures(point, STOPS_LAYER)
                     if (tappedStops.isNotEmpty()) {
@@ -305,20 +322,6 @@ class MapFragment : Fragment() {
 
                 // TODO: Try to animate to the new vehicle positions.
                 mapViewModel.routes.observe(viewLifecycleOwner, Observer { routes ->
-                    symbolManager?.delete(vehicleMarkers)
-                    vehicleMarkers.clear()
-                    routes.forEach { route ->
-                        route.vehicles.forEach { vehicle ->
-                            symbolManager?.create(
-                                SymbolOptions()
-                                    .withLatLng(LatLng(vehicle.location.lat, vehicle.location.lng))
-                                    .withIconRotate(vehicle.heading.toFloat())
-                                    .withIconColor("#${route.color}")
-                                    .withIconImage(RUTGERS_BUS_ICON)
-                                    .withIconSize(1.5f)
-                            )?.let { vehicleMarkers.add(it) }
-                        }
-                    }
                     // Only add stops once, since they won't change while the app is running
                     if (mapViewModel.stopCodeToMarkerDataMap.isEmpty()) {
                         for (route in routes) {
@@ -370,6 +373,46 @@ class MapFragment : Fragment() {
                                 )
                             }
                         }
+                    }
+
+                    style.removeLayer(VEHICLES_LAYER)
+                    style.removeSource(VEHICLES_SOURCE)
+                    val vehicleFeatures = mutableListOf<Feature>()
+                    routes.forEach { route ->
+                        route.vehicles.forEach { vehicle ->
+                            vehicleFeatures.add(
+                                Feature.fromGeometry(
+                                    Point.fromLngLat(vehicle.location.lng, vehicle.location.lat)
+                                ).apply {
+                                    addStringProperty(ROUTE_NAME, route.longName)
+                                    addNumberProperty(VEHICLE_ID, vehicle.vehicleId)
+                                    addNumberProperty(HEADING, vehicle.heading)
+                                    addStringProperty(COLOR, "#${route.color}")
+                                }
+                            )
+                        }
+                    }
+
+                    style.addSource(
+                        GeoJsonSource(
+                            VEHICLES_SOURCE,
+                            FeatureCollection.fromFeatures(vehicleFeatures)
+                        )
+                    )
+                    SymbolLayer(VEHICLES_LAYER, VEHICLES_SOURCE).apply {
+                        setProperties(
+                            PropertyFactory.iconImage(RUTGERS_BUS_ICON),
+                            PropertyFactory.iconRotate(get(HEADING)),
+                            PropertyFactory.iconSize(1.5f),
+                            PropertyFactory.iconAllowOverlap(true)
+                        )
+                        style.addLayerAbove(
+                            this, when {
+                                style.getLayer(STOPS_LAYER) != null -> STOPS_LAYER
+                                style.getLayer(BUILDINGS_LAYER) != null -> BUILDINGS_LAYER
+                                else -> mapViewModel.firstLabelLayerId
+                            }
+                        )
                     }
                 })
 
@@ -559,7 +602,6 @@ class MapFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        symbolManager?.onDestroy()
         mapView.onDestroy()
     }
 
