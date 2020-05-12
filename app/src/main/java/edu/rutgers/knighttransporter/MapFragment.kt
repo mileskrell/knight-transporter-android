@@ -2,7 +2,6 @@ package edu.rutgers.knighttransporter
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
@@ -13,6 +12,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.gson.Gson
 import com.leinardi.android.speeddial.SpeedDialView
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
@@ -69,6 +69,7 @@ class MapFragment : Fragment() {
         const val SELECTED_PLACE_LAYER = "rSelectedPlace-layer"
         const val RUTGERS_BUS_ICON = "rutgers-bus-icon"
         const val RUTGERS_STOP_ICON = "rutgers-stop-icon"
+        const val BOTTOM_SHEET_FRAGMENT = "bottom sheet fragment"
     }
 
     private lateinit var toolbar: Toolbar
@@ -171,6 +172,7 @@ class MapFragment : Fragment() {
                         style.addLayerAbove(this, STOPS_LAYER)
                     }
                 }
+                // TODO: Update selected layer as vehicle moves
                 PlaceType.VEHICLE -> {
                     SymbolLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).withProperties(
                         PropertyFactory.iconColor(0xFFFF00FF.toInt()),
@@ -202,7 +204,8 @@ class MapFragment : Fragment() {
             }
             childFragmentManager.commitNow {
                 replace(
-                    R.id.map_bottom_sheet, when (placeType) {
+                    R.id.map_bottom_sheet,
+                    when (placeType) {
                         PlaceType.WALKWAY -> throw IllegalStateException("Bottom sheet should not be created for walkways")
                         PlaceType.PARKING_LOT -> ParkingLotFragment.newInstance(
                             feature.toJson()
@@ -210,7 +213,8 @@ class MapFragment : Fragment() {
                         PlaceType.BUILDING -> BuildingFragment.newInstance(feature.toJson())
                         PlaceType.STOP -> StopFragment.newInstance(feature.toJson())
                         PlaceType.VEHICLE -> VehicleFragment.newInstance(feature.toJson())
-                    }
+                    },
+                    BOTTOM_SHEET_FRAGMENT
                 )
             }
 
@@ -227,6 +231,9 @@ class MapFragment : Fragment() {
             val removedLayer = style.removeLayer(SELECTED_PLACE_LAYER)
             style.removeSource(SELECTED_PLACE_SOURCE)
             BottomSheetBehavior.from(map_bottom_sheet).state = BottomSheetBehavior.STATE_HIDDEN
+            childFragmentManager.findFragmentByTag(BOTTOM_SHEET_FRAGMENT)?.let {
+                childFragmentManager.commitNow { remove(it) }
+            }
             removedLayer
         } ?: false
     }
@@ -319,55 +326,63 @@ class MapFragment : Fragment() {
 
                 // TODO: Try to animate to the new vehicle positions.
                 mapViewModel.routes.observe(viewLifecycleOwner, Observer { routes ->
-                    // Only add stops once, since they won't change while the app is running
-                    if (mapViewModel.stopCodeToMarkerDataMap.isEmpty()) {
-                        for (route in routes) {
-                            for (stop in route.stops) {
-                                if (mapViewModel.stopCodeToMarkerDataMap[stop.stopId] == null) {
-                                    mapViewModel.stopCodeToMarkerDataMap[stop.stopId] =
-                                        StopMarkerData(stop)
-                                }
-                                mapViewModel.stopCodeToMarkerDataMap[stop.stopId]!!.run {
-                                    associatedRoutes.add(route)
-                                    arrivalEstimates.addAll(
-                                        route.vehicles.flatMap { it.arrivalEstimates }
-                                            .filter { it.stopId == stop.stopId }
-                                    )
-                                }
-                                Log.d("MapFragment", "Added ${stop.name} (${stop.stopId})")
+                    val newStopIdToMarkerDataMap = mutableMapOf<Int, StopMarkerData>()
+                    for (route in routes) {
+                        for (stop in route.stops) {
+                            if (newStopIdToMarkerDataMap[stop.stopId] == null) {
+                                newStopIdToMarkerDataMap[stop.stopId] = StopMarkerData(stop)
+                            }
+                            newStopIdToMarkerDataMap[stop.stopId]!!.run {
+                                associatedRoutes.add(route)
+                                arrivalEstimates.addAll(
+                                    route.vehicles.flatMap { it.arrivalEstimates }
+                                        .filter { it.stopId == stop.stopId }
+                                )
                             }
                         }
+                    }
 
-                        if (mapViewModel.stopCodeToMarkerDataMap.isNotEmpty()) {
-                            val busStopFeatures = mapViewModel.stopCodeToMarkerDataMap.values.map {
+                    // Just for performance; we don't need to remove and re-add this layer every few seconds
+                    val shouldAddLayer =
+                        mapViewModel.stopIdToMarkerDataMap.value!!.isEmpty() && newStopIdToMarkerDataMap.isNotEmpty()
+
+                    // Any open StopFragment will observe this data so it can update while open
+                    mapViewModel.stopIdToMarkerDataMap.value = newStopIdToMarkerDataMap
+
+                    if (shouldAddLayer) {
+                        val busStopFeatures =
+                            newStopIdToMarkerDataMap.values.map { stopMarkerData ->
                                 Feature.fromGeometry(
                                     Point.fromLngLat(
-                                        it.stop.location.lng,
-                                        it.stop.location.lat
+                                        stopMarkerData.stop.location.lng,
+                                        stopMarkerData.stop.location.lat
                                     )
                                 ).apply {
-                                    addStringProperty(STOP_NAME, it.stop.name)
-                                    // TODO: Store stop data as feature properties instead?
+                                    addStringProperty(
+                                        STOP_MARKER_DATA_JSON,
+                                        Gson().toJson(stopMarkerData, StopMarkerData::class.java)
+                                    )
                                 }
                             }
-                            style.addSource(
-                                GeoJsonSource(
-                                    STOPS_SOURCE,
-                                    FeatureCollection.fromFeatures(busStopFeatures)
-                                )
+                        style.removeLayer(STOPS_LAYER)
+                        style.removeSource(STOPS_SOURCE)
+                        style.addSource(
+                            GeoJsonSource(
+                                STOPS_SOURCE,
+                                FeatureCollection.fromFeatures(busStopFeatures)
                             )
-                            SymbolLayer(STOPS_LAYER, STOPS_SOURCE).withProperties(
-                                PropertyFactory.iconColor("#ffa500"),
-                                PropertyFactory.iconImage(RUTGERS_STOP_ICON),
-                                PropertyFactory.iconAllowOverlap(true)
-                            ).run {
-                                style.addLayerAbove(
-                                    this, when {
-                                        style.getLayer(BUILDINGS_LAYER) != null -> BUILDINGS_LAYER
-                                        else -> mapViewModel.firstLabelLayerId
-                                    }
-                                )
-                            }
+                        )
+                        SymbolLayer(STOPS_LAYER, STOPS_SOURCE).withProperties(
+                            PropertyFactory.iconColor("#ffa500"),
+                            PropertyFactory.iconImage(RUTGERS_STOP_ICON),
+                            PropertyFactory.iconAllowOverlap(true)
+                        ).run {
+                            style.addLayerAbove(
+                                this, when {
+                                    style.getLayer(BUILDINGS_LAYER) != null -> BUILDINGS_LAYER
+                                    else -> mapViewModel.firstLabelLayerId
+                                }
+                            )
                         }
                     }
 

@@ -10,7 +10,7 @@ fun Feature.getNameForPlaceType(placeType: PlaceType) = when (placeType) {
     PlaceType.WALKWAY -> throw IllegalStateException("This method shouldn't be called on walkways")
     PlaceType.PARKING_LOT -> getStringProperty(LOT_NAME) ?: "Unnamed parking lot"
     PlaceType.BUILDING -> getStringProperty(BUILDING_NAME) ?: "Unnamed building"
-    PlaceType.STOP -> getStringProperty(STOP_NAME) ?: "Unnamed stop"
+    PlaceType.STOP -> TODO()
     PlaceType.VEHICLE -> throw IllegalStateException("This method shouldn't be called on vehicles")
 }
 
@@ -34,7 +34,7 @@ const val CONTACT = "Contact"
 const val WEBSITE = "Website"
 
 // Stops
-const val STOP_NAME = "stop name"
+const val STOP_MARKER_DATA_JSON = "stop marker data JSON"
 
 // Vehicles
 const val ROUTE_NAME = "route name"
