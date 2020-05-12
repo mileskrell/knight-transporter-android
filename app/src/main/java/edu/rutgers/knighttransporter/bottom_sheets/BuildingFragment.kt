@@ -67,6 +67,8 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
         Glide.with(this)
             .load("https://storage.googleapis.com/rutgers-campus-map-building-images-prod/$buildingNumber/00.jpg")
             .centerCrop()
+            // TODO: Display something for both "image not found" (e.g. building 3519) and for
+            //  "some other error fetching image"
             .placeholder(progressDrawable)
             .into(place_sheet_building_image)
 

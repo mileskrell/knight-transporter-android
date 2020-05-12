@@ -13,7 +13,8 @@ class MapViewModel : ViewModel() {
         get() = _routes
 
     // From stop ID to StopMarkerData
-    val stopCodeToMarkerDataMap = mutableMapOf<Int, StopMarkerData>()
+    // TODO: Once data is over some age, display some kind of warning
+    val stopIdToMarkerDataMap = MutableLiveData(mutableMapOf<Int, StopMarkerData>())
 
     // Initialized as soon as the map's style is loaded
     lateinit var firstLabelLayerId: String
