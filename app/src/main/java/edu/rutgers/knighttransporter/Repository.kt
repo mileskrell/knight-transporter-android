@@ -70,5 +70,5 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
         return FeatureCollection.fromJson(it)
     }
 
-    suspend fun getBuildingDetails(buildingCode: Int) = rutgersCloudStorageService.getBuildingDetails(buildingCode)
+    suspend fun getBuildingCloudStorageDetails(buildingCode: Int) = rutgersCloudStorageService.getBuildingCloudStorageDetails(buildingCode)
 }

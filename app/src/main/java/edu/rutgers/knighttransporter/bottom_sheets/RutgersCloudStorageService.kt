@@ -9,5 +9,5 @@ interface RutgersCloudStorageService {
     }
 
     @GET("archibus-data/building-details/{code}.json")
-    suspend fun getBuildingDetails(@Path("code") buildingCode: Int): BuildingDetails
+    suspend fun getBuildingCloudStorageDetails(@Path("code") buildingCode: Int): BuildingCloudStorageDetails
 }
