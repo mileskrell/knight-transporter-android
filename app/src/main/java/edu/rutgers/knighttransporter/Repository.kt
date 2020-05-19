@@ -58,16 +58,19 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
         .build()
         .create(RutgersCloudStorageService::class.java)
 
-    suspend fun getWalkways() = walkways ?: arcGISService.getWalkways().let {
-        return FeatureCollection.fromJson(it)
+    suspend fun getWalkways() = walkways ?: arcGISService.getWalkways().let { json ->
+        return FeatureCollection.fromJson(json)
+            .also { walkways = it }
     }
 
-    suspend fun getParkingLots() = parkingLots ?: arcGISService.getParkingLots().let {
-        return FeatureCollection.fromJson(it)
+    suspend fun getParkingLots() = parkingLots ?: arcGISService.getParkingLots().let { json ->
+        return FeatureCollection.fromJson(json)
+            .also { parkingLots = it }
     }
 
-    suspend fun getBuildings() = buildings ?: arcGISService.getBuildings().let {
-        return FeatureCollection.fromJson(it)
+    suspend fun getBuildings() = buildings ?: arcGISService.getBuildings().let { json ->
+        return FeatureCollection.fromJson(json)
+            .also { buildings = it }
     }
 
     suspend fun getBuildingCloudStorageDetails(buildingCode: Int) = rutgersCloudStorageService.getBuildingCloudStorageDetails(buildingCode)
