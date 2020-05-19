@@ -106,19 +106,19 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
             .into(place_sheet_building_image)
 
         mapViewModel.viewModelScope.launch(context = Dispatchers.Main) {
-            val details = withContext(Dispatchers.Default) {
-                mapViewModel.getBuildingDetails(building.getNumberProperty(BUILDING_NUMBER).toInt())
+            val cloudStorageDetails = withContext(Dispatchers.Default) {
+                mapViewModel.getBuildingCloudStorageDetails(building.getNumberProperty(BUILDING_NUMBER).toInt())
             }
 
-            if (!details.departments.isNullOrEmpty()) {
+            if (!cloudStorageDetails.departments.isNullOrEmpty()) {
                 val departmentsList =
-                    details.departments.joinToString(prefix = "- ", separator = "\n- ")
+                    cloudStorageDetails.departments.joinToString(prefix = "- ", separator = "\n- ")
                 place_sheet_building_departments.run {
                     markwon.setMarkdown(this, "### Departments\n$departmentsList")
                     visibility = View.VISIBLE
                 }
             }
-            place_sheet_building_address.append(" ${details.zip}")
+            place_sheet_building_address.append(" ${cloudStorageDetails.zip}")
         }
     }
 }
