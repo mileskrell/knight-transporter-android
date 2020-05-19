@@ -13,6 +13,12 @@ const val walkwaysPath = "Rutgers_University_Walkways/FeatureServer/0/query?$com
 const val buildingsPath = "Rutgers_University_Buildings/FeatureServer/0/query?$commonParams&outFields=$BUILDING_NAME%2C$BUILDING_NUMBER%2C$BUILDING_ADDRESS%2C$CITY%2C$STATE%2C$LATITUDE%2C$LONGITUDE"
 const val parkingLotsPath = "Rutgers_University_Parking/FeatureServer/0/query?$commonParams&outFields=$PARKING_ID%2C$LOT_NAME%2C$CONTACT%2C$WEBSITE%2C$LATITUDE%2C$LONGITUDE"
 
+/*
+This one unfortunately doesn't contain geometry, only properties - including the website,
+description, and alert links, which "Rutgers_University_Buildings" does *not* include.
+ */
+const val buildingArcGISDetailsPath = "Completed_Rutgers_Building_List/FeatureServer/0/query?$commonParams&where=1%3D1&outFields=$BUILDING_NUMBER%2C$WEBSITE%2C$DESCRIPTION%2C$ALERT_LINKS"
+
 // Used by Mapbox
 const val walkwaysUrl = arcGISbaseUrl + walkwaysPath
 const val buildingsUrl = arcGISbaseUrl + buildingsPath

@@ -20,9 +20,18 @@ fun Feature.getNameForPlaceType(placeType: PlaceType) = when (placeType) {
 const val LATITUDE = "Latitude"
 const val LONGITUDE = "Longitude"
 
+// Building ArcGIS details and parking lots
+const val WEBSITE = "Website"
+
+// Buildings and building ArcGIS details
+const val BUILDING_NUMBER = "BldgNum"
+
+// Building ArcGIS details
+const val DESCRIPTION = "Description"
+const val ALERT_LINKS = "AlertLinks"
+
 // Buildings
 const val BUILDING_NAME = "BldgName"
-const val BUILDING_NUMBER = "BldgNum"
 const val BUILDING_ADDRESS = "BldgAddr"
 const val CITY = "City"
 const val STATE = "State"
@@ -31,7 +40,6 @@ const val STATE = "State"
 const val PARKING_ID = "Parking_ID"
 const val LOT_NAME = "Lot_Name"
 const val CONTACT = "Contact"
-const val WEBSITE = "Website"
 
 // Stops
 const val STOP_MARKER_DATA_JSON = "stop marker data JSON"

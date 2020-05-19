@@ -16,11 +16,7 @@ import com.mapbox.geojson.Feature
 import edu.rutgers.knighttransporter.MapViewModel
 import edu.rutgers.knighttransporter.R
 import edu.rutgers.knighttransporter.createRutgersMarkwon
-import edu.rutgers.knighttransporter.feature_stuff.BUILDING_ADDRESS
-import edu.rutgers.knighttransporter.feature_stuff.BUILDING_NAME
-import edu.rutgers.knighttransporter.feature_stuff.BUILDING_NUMBER
-import edu.rutgers.knighttransporter.feature_stuff.CITY
-import edu.rutgers.knighttransporter.feature_stuff.STATE
+import edu.rutgers.knighttransporter.feature_stuff.*
 import kotlinx.android.synthetic.main.fragment_place_sheet_building.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -104,6 +100,19 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
                 }
             })
             .into(place_sheet_building_image)
+
+        mapViewModel.viewModelScope.launch(context = Dispatchers.Main) {
+            val arcGISDetails = withContext(Dispatchers.Default) {
+                mapViewModel.getBuildingArcGISDetails(buildingNumber)
+            }
+
+            if (arcGISDetails?.website != null) {
+                place_sheet_building_website.run {
+                    markwon.setMarkdown(this, "<${arcGISDetails.website}>")
+                    visibility = View.VISIBLE
+                }
+            }
+        }
 
         mapViewModel.viewModelScope.launch(context = Dispatchers.Main) {
             val cloudStorageDetails = withContext(Dispatchers.Default) {
