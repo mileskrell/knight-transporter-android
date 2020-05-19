@@ -2,7 +2,7 @@ package edu.rutgers.knighttransporter.feature_stuff
 
 import retrofit2.http.GET
 
-interface GeoJSONService {
+interface ArcGISService {
     @GET(walkwaysPath)
     suspend fun getWalkways(): String
 
