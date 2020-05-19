@@ -57,7 +57,7 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
             place_sheet_building_image.contentDescription = "Photo of $buildingName"
         }
 
-        val buildingNumber = building.getNumberProperty(BUILDING_NUMBER)
+        val buildingNumber = building.getNumberProperty(BUILDING_NUMBER).toInt()
 
         place_sheet_building_number.text = "Building number: $buildingNumber"
 
@@ -107,7 +107,7 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
 
         mapViewModel.viewModelScope.launch(context = Dispatchers.Main) {
             val cloudStorageDetails = withContext(Dispatchers.Default) {
-                mapViewModel.getBuildingCloudStorageDetails(building.getNumberProperty(BUILDING_NUMBER).toInt())
+                mapViewModel.getBuildingCloudStorageDetails(buildingNumber)
             }
 
             if (!cloudStorageDetails.departments.isNullOrEmpty()) {
