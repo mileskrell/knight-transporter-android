@@ -1,5 +1,6 @@
 package edu.rutgers.knighttransporter.bottom_sheets
 
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
@@ -7,6 +8,10 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.viewModelScope
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.mapbox.geojson.Feature
 import edu.rutgers.knighttransporter.MapViewModel
 import edu.rutgers.knighttransporter.R
@@ -67,9 +72,37 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
         Glide.with(this)
             .load("https://storage.googleapis.com/rutgers-campus-map-building-images-prod/$buildingNumber/00.jpg")
             .centerCrop()
-            // TODO: Display something for both "image not found" (e.g. building 3519) and for
-            //  "some other error fetching image"
             .placeholder(progressDrawable)
+            .listener(object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: Target<Drawable>?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    // TODO: Surely there's a cleaner way to check this
+                    if (e?.message?.contains("FileNotFound") == true) {
+                        // e.g. building 3519
+                        place_sheet_building_image_error.text = getString(R.string.no_photo_found)
+                    } else {
+                        place_sheet_building_image_error.text =
+                            getString(R.string.error_loading_photo)
+                    }
+                    place_sheet_building_image.visibility = View.INVISIBLE
+                    place_sheet_building_image_error.visibility = View.VISIBLE
+                    return false
+                }
+
+                override fun onResourceReady(
+                    resource: Drawable?,
+                    model: Any?,
+                    target: Target<Drawable>?,
+                    dataSource: DataSource?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    return false
+                }
+            })
             .into(place_sheet_building_image)
 
         mapViewModel.viewModelScope.launch(context = Dispatchers.Main) {

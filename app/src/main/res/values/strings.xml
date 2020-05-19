@@ -10,4 +10,7 @@
 
     <!-- TODO: Either shorten this text, or (ideally) find a way to ellipsize the TextView -->
     <string name="simple_search_hint">Search for a stop, route, or building</string>
+
+    <string name="no_photo_found">No photo found</string>
+    <string name="error_loading_photo">Error loading photo</string>
 </resources>
