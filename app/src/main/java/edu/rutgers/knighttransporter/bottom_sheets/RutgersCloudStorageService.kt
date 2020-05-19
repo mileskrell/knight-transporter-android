@@ -8,6 +8,6 @@ interface RutgersCloudStorageService {
         const val BASE_URL = "https://storage.googleapis.com/rutgers-campus-map-public-data-prod/"
     }
 
-    @GET("archibus-data/building-details/{code}.json")
-    suspend fun getBuildingCloudStorageDetails(@Path("code") buildingCode: Int): BuildingCloudStorageDetails
+    @GET("archibus-data/building-details/{num}.json")
+    suspend fun getBuildingCloudStorageDetails(@Path("num") buildingNumber: Int): BuildingCloudStorageDetails
 }

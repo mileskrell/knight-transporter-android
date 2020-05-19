@@ -73,5 +73,6 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
             .also { buildings = it }
     }
 
-    suspend fun getBuildingCloudStorageDetails(buildingCode: Int) = rutgersCloudStorageService.getBuildingCloudStorageDetails(buildingCode)
+    suspend fun getBuildingCloudStorageDetails(buildingNumber: Int) =
+        rutgersCloudStorageService.getBuildingCloudStorageDetails(buildingNumber)
 }

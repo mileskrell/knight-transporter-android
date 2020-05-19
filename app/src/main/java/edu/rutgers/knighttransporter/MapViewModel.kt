@@ -31,5 +31,6 @@ class MapViewModel : ViewModel() {
 
     suspend fun getBuildings() = repository.getBuildings()
 
-    suspend fun getBuildingCloudStorageDetails(buildingCode: Int) = repository.getBuildingCloudStorageDetails(buildingCode)
+    suspend fun getBuildingCloudStorageDetails(buildingNumber: Int) =
+        repository.getBuildingCloudStorageDetails(buildingNumber)
 }
