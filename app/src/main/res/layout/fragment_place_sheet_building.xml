@@ -68,7 +68,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="8dp"
-        android:visibility="invisible"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/place_sheet_building_address"
         tools:text="Departments\n• NB SAS Some dept.\n• IP&amp;O Something\n• OIT Another thing"
