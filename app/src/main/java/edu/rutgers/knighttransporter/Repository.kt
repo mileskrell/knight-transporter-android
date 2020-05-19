@@ -4,6 +4,8 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.mapbox.geojson.FeatureCollection
+import edu.rutgers.knighttransporter.bottom_sheets.BuildingArcGISDetailsFeatureCollection
+import edu.rutgers.knighttransporter.bottom_sheets.BuildingArcGISDetailsFeatureCollection.Feature.BuildingArcGISDetails
 import edu.rutgers.knighttransporter.bottom_sheets.RutgersCloudStorageService
 import edu.rutgers.knighttransporter.feature_stuff.ArcGISService
 import edu.rutgers.knighttransporter.feature_stuff.arcGISbaseUrl
@@ -24,6 +26,7 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
     private var walkways: FeatureCollection? = null
     private var parkingLots: FeatureCollection? = null
     private var buildings: FeatureCollection? = null
+    private var buildingArcGISDetailsList: List<BuildingArcGISDetails>? = null
 
     private val translocSocket = IO.socket(translocUrl).connect().apply {
         on(Socket.EVENT_CONNECT) {
@@ -71,6 +74,18 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
     suspend fun getBuildings() = buildings ?: arcGISService.getBuildings().let { json ->
         return FeatureCollection.fromJson(json)
             .also { buildings = it }
+    }
+
+    suspend fun getBuildingArcGISDetails(buildingNumber: Int): BuildingArcGISDetails? {
+        if (buildingArcGISDetailsList == null) {
+            buildingArcGISDetailsList = Gson().fromJson(
+                arcGISService.getBuildingsArcGISDetails(),
+                BuildingArcGISDetailsFeatureCollection::class.java
+            ).features.map { it.properties }
+        }
+        // There should really always be a building with the provided number,
+        // but we're using firstOrNull() just to be safe
+        return buildingArcGISDetailsList!!.firstOrNull { it.bldgNum == buildingNumber }
     }
 
     suspend fun getBuildingCloudStorageDetails(buildingNumber: Int) =

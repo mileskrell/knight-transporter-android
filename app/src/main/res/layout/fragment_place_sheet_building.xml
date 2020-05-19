@@ -64,13 +64,27 @@
         tools:text="110 Frelinghuysen Road\nPiscataway, NJ 08854-8019" />
 
     <TextView
+        android:id="@+id/place_sheet_building_website"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="8dp"
+        android:paddingTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/place_sheet_building_address"
+        tools:autoLink="web"
+        tools:text="http://studentcenters.rutgers.edu/student-centers/livingston-student-center/"
+        tools:visibility="visible" />
+
+    <TextView
         android:id="@+id/place_sheet_building_departments"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="8dp"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/place_sheet_building_address"
+        app:layout_constraintTop_toBottomOf="@id/place_sheet_building_website"
         tools:text="Departments\n• NB SAS Some dept.\n• IP&amp;O Something\n• OIT Another thing"
         tools:visibility="visible" />
 </androidx.constraintlayout.widget.ConstraintLayout>
