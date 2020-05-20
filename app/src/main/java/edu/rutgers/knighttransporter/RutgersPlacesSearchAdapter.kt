@@ -41,14 +41,18 @@ class RutgersPlacesSearchAdapter(
                 return FilterResults()
             }
 
-            // TODO: Split query on spaces and search for places containing all words.
-            //  E.g. you might search "farm weather" when you're looking for
-            //  "Hort Farm 1 - Weather Station Auxiliary Building".
+            val searchWords = constraint.toString().toLowerCase(Locale.getDefault()).split(" ")
 
-            // Retrieve the autocomplete results.
+            // Split query on spaces and search for places containing all words. E.g. if you're
+            // looking for "Hort Farm 1 - Weather Station Auxiliary Building", you can just type
+            // "farm weat".
             val searchResults = adapterPlaceItems.filter { nameLatLng ->
-                nameLatLng.placeName.toLowerCase(Locale.getDefault())
-                    .contains(constraint.toString().toLowerCase(Locale.getDefault()))
+                val placeWords = nameLatLng.placeName.toLowerCase(Locale.getDefault()).split(" ")
+                searchWords.all { searchWord ->
+                    placeWords.any { placeWord ->
+                        placeWord.contains(searchWord)
+                    }
+                }
             }.toMutableList()
 
             // Prioritize results that begin with the search string
