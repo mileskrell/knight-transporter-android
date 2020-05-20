@@ -106,7 +106,7 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
                 mapViewModel.getBuildingArcGISDetails(buildingNumber)
             }
 
-            if (arcGISDetails?.website != null) {
+            if (arcGISDetails?.website?.isNotBlank() == true) { // there's >600 null, >100 blank
                 place_sheet_building_website.run {
                     markwon.setMarkdown(this, "<${arcGISDetails.website}>")
                     visibility = View.VISIBLE
