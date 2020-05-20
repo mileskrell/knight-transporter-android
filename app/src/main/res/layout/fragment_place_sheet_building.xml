@@ -64,7 +64,7 @@
         tools:text="110 Frelinghuysen Road\nPiscataway, NJ 08854-8019" />
 
     <TextView
-        android:id="@+id/place_sheet_building_website"
+        android:id="@+id/place_sheet_building_alert"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:paddingHorizontal="8dp"
@@ -74,7 +74,34 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/place_sheet_building_address"
         tools:autoLink="web"
-        tools:text="http://studentcenters.rutgers.edu/student-centers/livingston-student-center/"
+        tools:text="Alert: http://studentcenters.rutgers.edu/student-centers/livingston-student-center/"
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/place_sheet_building_description"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="8dp"
+        android:paddingTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/place_sheet_building_alert"
+        tools:text="For campus information go to the Student Street Information Desk on the 1st floor or call 973-353-1766"
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/place_sheet_building_website"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="8dp"
+        android:paddingTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/place_sheet_building_description"
+        tools:autoLink="web"
+        tools:text="Website: http://studentcenters.rutgers.edu/student-centers/livingston-student-center/"
         tools:visibility="visible" />
 
     <TextView

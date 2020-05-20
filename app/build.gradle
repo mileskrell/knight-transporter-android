@@ -70,6 +70,7 @@ dependencies {
 
     def markwon_version = '4.3.1'
     implementation "io.noties.markwon:core:$markwon_version"
+    implementation "io.noties.markwon:linkify:$markwon_version"
 
     implementation("io.socket:socket.io-client:1.0.0") {
         // excluding org.json which is provided by Android

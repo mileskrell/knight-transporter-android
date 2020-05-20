@@ -6,7 +6,7 @@ import android.text.Spanned
 import android.text.style.LineHeightSpan
 import android.util.DisplayMetrics
 import io.noties.markwon.*
-import org.commonmark.node.ListItem
+import io.noties.markwon.linkify.LinkifyPlugin
 import org.commonmark.node.SoftLineBreak
 import kotlin.math.roundToInt
 
@@ -16,7 +16,7 @@ import kotlin.math.roundToInt
  * - https://github.com/noties/Markwon/issues/142
  * - https://github.com/noties/Markwon/issues/143
  */
-fun createRutgersMarkwon(context: Context) = Markwon.builder(context)
+fun createRutgersMarkwon(context: Context, autoLink: Boolean = false) = Markwon.builder(context)
     .usePlugin(object : AbstractMarkwonPlugin() {
 
         // Without this config, \n would just add a space, and we
@@ -34,7 +34,9 @@ fun createRutgersMarkwon(context: Context) = Markwon.builder(context)
 //                FirstLineSpacingSpan(context, 14f)
 //            }
 //        }
-    })
+    }).run {
+        if (autoLink) usePlugin(LinkifyPlugin.create()) else this
+    }
     .build()
 
 private class FirstLineSpacingSpan(context: Context, spacingDp: Float) : LineHeightSpan {
