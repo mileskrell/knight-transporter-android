@@ -102,13 +102,26 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
             .into(place_sheet_building_image)
 
         mapViewModel.viewModelScope.launch(context = Dispatchers.Main) {
+            val autoLinkMarkwon = createRutgersMarkwon(requireContext(), true)
             val arcGISDetails = withContext(Dispatchers.Default) {
                 mapViewModel.getBuildingArcGISDetails(buildingNumber)
             }
 
+            if (arcGISDetails?.alertLinks != null) {
+                place_sheet_building_alert.run {
+                    autoLinkMarkwon.setMarkdown(this, "**Alert:** ${arcGISDetails.alertLinks}")
+                    visibility = View.VISIBLE
+                }
+            }
+            if (arcGISDetails?.description != null) {
+                place_sheet_building_description.run {
+                    autoLinkMarkwon.setMarkdown(this, arcGISDetails.description)
+                    visibility = View.VISIBLE
+                }
+            }
             if (arcGISDetails?.website?.isNotBlank() == true) { // there's >600 null, >100 blank
                 place_sheet_building_website.run {
-                    markwon.setMarkdown(this, "<${arcGISDetails.website}>")
+                    markwon.setMarkdown(this, "**Website:** <${arcGISDetails.website}>")
                     visibility = View.VISIBLE
                 }
             }
