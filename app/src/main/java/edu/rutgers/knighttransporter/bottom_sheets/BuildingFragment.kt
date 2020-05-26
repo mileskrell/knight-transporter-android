@@ -2,7 +2,10 @@ package edu.rutgers.knighttransporter.bottom_sheets
 
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.view.View
+import android.widget.ImageView
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.viewModelScope
@@ -21,6 +24,7 @@ import kotlinx.android.synthetic.main.fragment_place_sheet_building.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.min
 
 class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
     companion object {
@@ -65,8 +69,14 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
             start()
         }
 
+        val fetchSize = DisplayMetrics().run {
+            requireActivity().windowManager.defaultDisplay.getMetrics(this)
+            min(widthPixels, heightPixels)
+        }
+
         Glide.with(this)
             .load("https://storage.googleapis.com/rutgers-campus-map-building-images-prod/$buildingNumber/00.jpg")
+            .override(fetchSize)
             .centerCrop()
             .placeholder(progressDrawable)
             .listener(object : RequestListener<Drawable> {
@@ -96,6 +106,18 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
                     dataSource: DataSource?,
                     isFirstResource: Boolean
                 ): Boolean {
+                    if (resource != null) {
+                        place_sheet_building_image.setOnClickListener {
+                            AlertDialog.Builder(requireContext())
+                                .setView(R.layout.dialog_photo)
+                                .setNeutralButton(R.string.close) { _, _ -> }
+                                .show().run {
+                                    findViewById<ImageView>(R.id.expanded_image_view)?.setImageDrawable(
+                                        resource
+                                    )
+                                }
+                        }
+                    }
                     return false
                 }
             })
