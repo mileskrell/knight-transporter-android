@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.mapbox.geojson.Feature
+import edu.rutgers.knighttransporter.feature_stuff.PlaceType
 import edu.rutgers.knighttransporter.for_transloc.Route
 import edu.rutgers.knighttransporter.for_transloc.StopMarkerData
 
@@ -24,6 +26,9 @@ class MapViewModel : ViewModel() {
     var stopItems = emptyList<RutgersPlacesSearchAdapter.AdapterPlaceItem>()
     var vehicleItems = emptyList<RutgersPlacesSearchAdapter.AdapterPlaceItem>()
     lateinit var searchAdapter: RutgersPlacesSearchAdapter
+
+    var selectedFeature: Feature? = null
+    var selectedPlaceType: PlaceType? = null
 
     private val repository = Repository { newRoutes ->
         _routes.postValue(newRoutes)

@@ -155,6 +155,8 @@ class MapFragment : Fragment() {
      */
     private fun setSelectedPlace(placeType: PlaceType, feature: Feature) {
         style?.let { style ->
+            mapViewModel.selectedFeature = feature
+            mapViewModel.selectedPlaceType = placeType
             style.removeLayer(SELECTED_PLACE_LAYER)
             style.removeSource(SELECTED_PLACE_SOURCE)
             style.addSource(GeoJsonSource(SELECTED_PLACE_SOURCE, feature))
@@ -169,7 +171,6 @@ class MapFragment : Fragment() {
                         style.addLayerAbove(this, STOPS_LAYER)
                     }
                 }
-                // TODO: Update selected layer as vehicle moves
                 PlaceType.VEHICLE -> {
                     SymbolLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).withProperties(
                         PropertyFactory.iconColor(0xFFFF00FF.toInt()),
@@ -225,6 +226,8 @@ class MapFragment : Fragment() {
      */
     fun clearSelectedPlace(): Boolean {
         return style?.let { style ->
+            mapViewModel.selectedFeature = null
+            mapViewModel.selectedPlaceType = null
             val removedLayer = style.removeLayer(SELECTED_PLACE_LAYER)
             style.removeSource(SELECTED_PLACE_SOURCE)
             BottomSheetBehavior.from(map_bottom_sheet).state = BottomSheetBehavior.STATE_HIDDEN
@@ -465,6 +468,25 @@ class MapFragment : Fragment() {
                             .toTypedArray()
                     )
                     searchView.setAdapter(mapViewModel.searchAdapter)
+
+                    // If the user has a vehicle selected, update the selection
+                    if (mapViewModel.selectedPlaceType == PlaceType.VEHICLE) {
+                        val newVehicleFeature = vehicleFeatures.firstOrNull {
+                            it.getNumberProperty(VEHICLE_ID).toInt() ==
+                                    mapViewModel.selectedFeature!!
+                                        .getNumberProperty(VEHICLE_ID).toInt()
+                        }
+                        if (newVehicleFeature == null) {
+                            clearSelectedPlace()
+                            Toast.makeText(
+                                requireContext(),
+                                "Sorry - selected vehicle doesn't exist in the latest data",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        } else {
+                            setSelectedPlace(PlaceType.VEHICLE, newVehicleFeature)
+                        }
+                    }
                 })
 
                 mapViewModel.viewModelScope.launch {
