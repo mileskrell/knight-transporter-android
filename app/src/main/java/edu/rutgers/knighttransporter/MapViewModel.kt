@@ -19,6 +19,11 @@ class MapViewModel : ViewModel() {
     // Initialized as soon as the map's style is loaded
     lateinit var firstLabelLayerId: String
 
+    var buildingItems = emptyList<RutgersPlacesSearchAdapter.AdapterPlaceItem>()
+    var parkingLotItems = emptyList<RutgersPlacesSearchAdapter.AdapterPlaceItem>()
+    var stopItems = emptyList<RutgersPlacesSearchAdapter.AdapterPlaceItem>()
+    lateinit var searchAdapter: RutgersPlacesSearchAdapter
+
     private val repository = Repository { newRoutes ->
         _routes.postValue(newRoutes)
     }

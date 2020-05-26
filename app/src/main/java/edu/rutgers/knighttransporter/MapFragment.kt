@@ -362,6 +362,10 @@ class MapFragment : Fragment() {
                                         STOP_MARKER_DATA_JSON,
                                         Gson().toJson(stopMarkerData, StopMarkerData::class.java)
                                     )
+                                    // So we won't have to deserialize the JSON while searching:
+                                    addStringProperty(STOP_NAME, stopMarkerData.stop.name)
+                                    addNumberProperty(LATITUDE, stopMarkerData.stop.location.lat)
+                                    addNumberProperty(LONGITUDE, stopMarkerData.stop.location.lng)
                                 }
                             }
                         style.removeLayer(STOPS_LAYER)
@@ -384,6 +388,26 @@ class MapFragment : Fragment() {
                                 }
                             )
                         }
+                        mapViewModel.stopItems = busStopFeatures.map {
+                            RutgersPlacesSearchAdapter.AdapterPlaceItem(
+                                resources.getDrawable(R.drawable.circle, null),
+                                PlaceType.STOP,
+                                it
+                            )
+                        }
+                        mapViewModel.searchAdapter = RutgersPlacesSearchAdapter(
+                            requireContext(),
+                            mapViewModel.buildingItems
+                                .plus(mapViewModel.parkingLotItems)
+                                .plus(mapViewModel.stopItems)
+                                .toTypedArray()
+                        )
+                        searchView.setAdapter(mapViewModel.searchAdapter)
+                        Toast.makeText(
+                            context,
+                            "Loaded initial stop data",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
 
                     style.removeLayer(VEHICLES_LAYER)
@@ -434,7 +458,7 @@ class MapFragment : Fragment() {
 
                     // Set up search suggestions
 
-                    val buildingItems = buildings.features()
+                    mapViewModel.buildingItems = buildings.features()
                         ?.map {
                             RutgersPlacesSearchAdapter.AdapterPlaceItem(
                                 resources.getDrawable(R.drawable.building, null),
@@ -443,7 +467,7 @@ class MapFragment : Fragment() {
                             )
                         } ?: emptyList()
 
-                    val parkingLotItems = parkingLots.features()
+                    mapViewModel.parkingLotItems = parkingLots.features()
                         ?.map {
                             RutgersPlacesSearchAdapter.AdapterPlaceItem(
                                 resources.getDrawable(R.drawable.ic_local_parking_black_24dp, null),
@@ -451,28 +475,30 @@ class MapFragment : Fragment() {
                                 it
                             )
                         } ?: emptyList()
-                    val adapter =
-                        RutgersPlacesSearchAdapter(
-                            requireContext(),
-                            buildingItems.plus(parkingLotItems).toTypedArray()
-                        )
-                    searchView.setAdapter(adapter)
+                    mapViewModel.searchAdapter = RutgersPlacesSearchAdapter(
+                        requireContext(),
+                        mapViewModel.buildingItems
+                            .plus(mapViewModel.parkingLotItems)
+                            .plus(mapViewModel.stopItems)
+                            .toTypedArray()
+                    )
+                    searchView.setAdapter(mapViewModel.searchAdapter)
 
                     searchView.setOnItemClickListener { _, _, position, _ ->
                         searchView.closeSearch()
                         mapboxMap.animateCamera(
                             CameraUpdateFactory.newLatLngZoom(
-                                adapter.getItem(position).latLng, 16.0
+                                mapViewModel.searchAdapter.getItem(position).latLng, 16.0
                             )
                         )
-                        val placeItem = adapter.getItem(position)
+                        val placeItem = mapViewModel.searchAdapter.getItem(position)
                         setSelectedPlace(placeItem.placeType, placeItem.feature)
                     }
 
                     activity?.runOnUiThread {
                         Toast.makeText(
                             context,
-                            "Fetched data needed for searching",
+                            "Loaded buildings and lots for searching",
                             Toast.LENGTH_LONG
                         ).show()
                     }
