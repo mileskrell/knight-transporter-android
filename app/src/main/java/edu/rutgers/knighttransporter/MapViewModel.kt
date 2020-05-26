@@ -22,6 +22,7 @@ class MapViewModel : ViewModel() {
     var buildingItems = emptyList<RutgersPlacesSearchAdapter.AdapterPlaceItem>()
     var parkingLotItems = emptyList<RutgersPlacesSearchAdapter.AdapterPlaceItem>()
     var stopItems = emptyList<RutgersPlacesSearchAdapter.AdapterPlaceItem>()
+    var vehicleItems = emptyList<RutgersPlacesSearchAdapter.AdapterPlaceItem>()
     lateinit var searchAdapter: RutgersPlacesSearchAdapter
 
     private val repository = Repository { newRoutes ->

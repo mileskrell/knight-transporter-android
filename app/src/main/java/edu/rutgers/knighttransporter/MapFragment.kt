@@ -400,6 +400,7 @@ class MapFragment : Fragment() {
                             mapViewModel.buildingItems
                                 .plus(mapViewModel.parkingLotItems)
                                 .plus(mapViewModel.stopItems)
+                                .plus(mapViewModel.vehicleItems)
                                 .toTypedArray()
                         )
                         searchView.setAdapter(mapViewModel.searchAdapter)
@@ -423,6 +424,9 @@ class MapFragment : Fragment() {
                                     addNumberProperty(VEHICLE_ID, vehicle.vehicleId)
                                     addNumberProperty(HEADING, vehicle.heading)
                                     addStringProperty(COLOR, "#${route.color}")
+                                    // For searching:
+                                    addNumberProperty(LATITUDE, vehicle.location.lat)
+                                    addNumberProperty(LONGITUDE, vehicle.location.lng)
                                 }
                             )
                         }
@@ -448,6 +452,22 @@ class MapFragment : Fragment() {
                             }
                         )
                     }
+                    mapViewModel.vehicleItems = vehicleFeatures.map {
+                        RutgersPlacesSearchAdapter.AdapterPlaceItem(
+                            resources.getDrawable(R.drawable.ic_navigation_black_24dp, null),
+                            PlaceType.VEHICLE,
+                            it
+                        )
+                    }
+                    mapViewModel.searchAdapter = RutgersPlacesSearchAdapter(
+                        requireContext(),
+                        mapViewModel.buildingItems
+                            .plus(mapViewModel.parkingLotItems)
+                            .plus(mapViewModel.stopItems)
+                            .plus(mapViewModel.vehicleItems)
+                            .toTypedArray()
+                    )
+                    searchView.setAdapter(mapViewModel.searchAdapter)
                 })
 
                 mapViewModel.viewModelScope.launch {
@@ -480,6 +500,7 @@ class MapFragment : Fragment() {
                         mapViewModel.buildingItems
                             .plus(mapViewModel.parkingLotItems)
                             .plus(mapViewModel.stopItems)
+                            .plus(mapViewModel.vehicleItems)
                             .toTypedArray()
                     )
                     searchView.setAdapter(mapViewModel.searchAdapter)
