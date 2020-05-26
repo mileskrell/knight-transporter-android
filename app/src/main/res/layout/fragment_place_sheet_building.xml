@@ -34,7 +34,7 @@
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:gravity="center"
-        android:visibility="invisible"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/place_sheet_building_image"
         app:layout_constraintEnd_toEndOf="@id/place_sheet_building_image"
         app:layout_constraintStart_toStartOf="@id/place_sheet_building_image"

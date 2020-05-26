@@ -13,4 +13,5 @@
 
     <string name="no_photo_found">No photo found</string>
     <string name="error_loading_photo">Error loading photo</string>
+    <string name="close">Close</string>
 </resources>
