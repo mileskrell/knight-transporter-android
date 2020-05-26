@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commitNow
@@ -72,7 +71,6 @@ class MapFragment : Fragment() {
         const val BOTTOM_SHEET_FRAGMENT = "bottom sheet fragment"
     }
 
-    private lateinit var toolbar: Toolbar
     private lateinit var searchView: MaterialSearchView
 
     private val mapViewModel: MapViewModel by activityViewModels()
@@ -119,7 +117,6 @@ class MapFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         Mapbox.getInstance(requireContext(), mapboxToken)
-        toolbar = (requireActivity() as MainActivity).toolbar
         searchView = (requireActivity() as MainActivity).search_view
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
