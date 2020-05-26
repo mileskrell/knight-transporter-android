@@ -215,8 +215,8 @@ class MapFragment : Fragment() {
                     BOTTOM_SHEET_FRAGMENT
                 )
             }
-
-            BottomSheetBehavior.from(map_bottom_sheet).state = BottomSheetBehavior.STATE_HALF_EXPANDED
+            BottomSheetBehavior.from(map_bottom_sheet).state =
+                BottomSheetBehavior.STATE_HALF_EXPANDED
         }
     }
 

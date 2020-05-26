@@ -50,14 +50,16 @@ class StopFragment : Fragment(R.layout.fragment_place_sheet_stop) {
         super.onViewCreated(view, savedInstanceState)
         place_sheet_stop_name.text = initialStopMarkerData.stop.name
 
-        val adapter = RoutesAdapter(initialStopMarkerData)
+        val routesAdapter = RoutesAdapter(initialStopMarkerData)
 
-        place_sheet_recycler_view.setHasFixedSize(true)
-        place_sheet_recycler_view.layoutManager = LinearLayoutManager(context)
-        place_sheet_recycler_view.adapter = adapter
+        place_sheet_stop_recycler_view.run {
+            setHasFixedSize(true)
+            layoutManager = LinearLayoutManager(context)
+            adapter = routesAdapter
+        }
 
         stopMarkersObserver = Observer { stopIdToMarkerDataMap ->
-            adapter.updateStopMarkerData(stopIdToMarkerDataMap[initialStopMarkerData.stop.stopId]!!)
+            routesAdapter.updateStopMarkerData(stopIdToMarkerDataMap[initialStopMarkerData.stop.stopId]!!)
         }
     }
 
