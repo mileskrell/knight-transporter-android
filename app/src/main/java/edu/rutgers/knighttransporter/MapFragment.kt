@@ -7,7 +7,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commitNow
-import androidx.lifecycle.Observer
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -325,7 +324,7 @@ class MapFragment : Fragment() {
                 }
 
                 // TODO: Try to animate to the new vehicle positions.
-                mapViewModel.routes.observe(viewLifecycleOwner, Observer { routes ->
+                mapViewModel.routes.observe({ lifecycle }) { routes ->
                     val newStopIdToMarkerDataMap = mutableMapOf<Int, StopMarkerData>()
                     for (route in routes) {
                         for (stop in route.stops) {
@@ -487,7 +486,7 @@ class MapFragment : Fragment() {
                             setSelectedPlace(PlaceType.VEHICLE, newVehicleFeature)
                         }
                     }
-                })
+                }
 
                 mapViewModel.viewModelScope.launch {
                     // TODO: Make sure these fail gracefully
