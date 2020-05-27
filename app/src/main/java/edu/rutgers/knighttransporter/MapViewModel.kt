@@ -1,5 +1,6 @@
 package edu.rutgers.knighttransporter
 
+import android.animation.AnimatorSet
 import android.os.Bundle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -29,6 +30,12 @@ class MapViewModel : ViewModel() {
 
     var selectedFeature: Feature? = null
     var selectedPlaceType: PlaceType? = null
+
+    // The starting place for the vehicle animations
+    var previousVehicleFeatures = emptyList<Feature>()
+
+    // This lets us cancel the vehicle animations if we get new data before they finish
+    var vehiclesAnimatorSet = AnimatorSet()
 
     private val repository = Repository { newRoutes ->
         _routes.postValue(newRoutes)

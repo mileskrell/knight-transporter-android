@@ -1,9 +1,11 @@
 package edu.rutgers.knighttransporter
 
+import android.animation.*
 import android.graphics.Color
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
+import androidx.core.animation.addListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commitNow
@@ -109,6 +111,19 @@ class MapFragment : Fragment() {
             }
         }
     })
+
+    // Used to store data when animating vehicles
+    private data class LatLngHeading(val latitude: Double, val longitude: Double, val heading: Int)
+
+    private val vehicleEvaluator = TypeEvaluator<LatLngHeading> { fraction, startValue, endValue ->
+        val interpolatedLat = startValue.latitude +
+                (endValue.latitude - startValue.latitude) * fraction
+        val interpolatedLng = startValue.longitude +
+                (endValue.longitude - startValue.longitude) * fraction
+        val interpolatedHeading = (startValue.heading +
+                (endValue.heading - startValue.heading) * fraction).toInt()
+        LatLngHeading(interpolatedLat, interpolatedLng, interpolatedHeading)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -323,7 +338,6 @@ class MapFragment : Fragment() {
                     isTiltGesturesEnabled = false
                 }
 
-                // TODO: Try to animate to the new vehicle positions.
                 mapViewModel.routes.observe({ lifecycle }) { routes ->
                     val newStopIdToMarkerDataMap = mutableMapOf<Int, StopMarkerData>()
                     for (route in routes) {
@@ -410,12 +424,10 @@ class MapFragment : Fragment() {
                         ).show()
                     }
 
-                    style.removeLayer(VEHICLES_LAYER)
-                    style.removeSource(VEHICLES_SOURCE)
-                    val vehicleFeatures = mutableListOf<Feature>()
+                    val newVehicleFeatures = mutableListOf<Feature>()
                     routes.forEach { route ->
                         route.vehicles.forEach { vehicle ->
-                            vehicleFeatures.add(
+                            newVehicleFeatures.add(
                                 Feature.fromGeometry(
                                     Point.fromLngLat(vehicle.location.lng, vehicle.location.lat)
                                 ).apply {
@@ -423,7 +435,7 @@ class MapFragment : Fragment() {
                                     addNumberProperty(VEHICLE_ID, vehicle.vehicleId)
                                     addNumberProperty(HEADING, vehicle.heading)
                                     addStringProperty(COLOR, "#${route.color}")
-                                    // For searching:
+                                    // For searching and animating:
                                     addNumberProperty(LATITUDE, vehicle.location.lat)
                                     addNumberProperty(LONGITUDE, vehicle.location.lng)
                                 }
@@ -431,27 +443,106 @@ class MapFragment : Fragment() {
                         }
                     }
 
-                    style.addSource(
-                        GeoJsonSource(
-                            VEHICLES_SOURCE,
-                            FeatureCollection.fromFeatures(vehicleFeatures)
+                    // If we haven't added the vehicles layer yet, add it
+                    if (style.getSource(VEHICLES_SOURCE) == null) {
+                        mapViewModel.previousVehicleFeatures = newVehicleFeatures
+                        style.addSource(
+                            GeoJsonSource(
+                                VEHICLES_SOURCE,
+                                FeatureCollection.fromFeatures(newVehicleFeatures)
+                            )
                         )
-                    )
-                    SymbolLayer(VEHICLES_LAYER, VEHICLES_SOURCE).withProperties(
-                        PropertyFactory.iconImage(RUTGERS_BUS_ICON),
-                        PropertyFactory.iconRotate(get(HEADING)),
-                        PropertyFactory.iconSize(1.5f),
-                        PropertyFactory.iconAllowOverlap(true)
-                    ).run {
-                        style.addLayerAbove(
-                            this, when {
-                                style.getLayer(STOPS_LAYER) != null -> STOPS_LAYER
-                                style.getLayer(BUILDINGS_LAYER) != null -> BUILDINGS_LAYER
-                                else -> mapViewModel.firstLabelLayerId
+                        SymbolLayer(VEHICLES_LAYER, VEHICLES_SOURCE).withProperties(
+                            PropertyFactory.iconImage(RUTGERS_BUS_ICON),
+                            PropertyFactory.iconRotate(get(HEADING)),
+                            PropertyFactory.iconSize(1.5f),
+                            PropertyFactory.iconAllowOverlap(true)
+                        ).run {
+                            style.addLayerAbove(
+                                this, when {
+                                    style.getLayer(STOPS_LAYER) != null -> STOPS_LAYER
+                                    style.getLayer(BUILDINGS_LAYER) != null -> BUILDINGS_LAYER
+                                    else -> mapViewModel.firstLabelLayerId
+                                }
+                            )
+                        }
+                    } else {
+                        // We already have a vehicles layer, so we'll animate to the new positions
+
+                        // Each animator corresponds to a single feature (vehicle), which is updated
+                        // in that animator's update listener. Each time a feature is updated, the
+                        // entire list (the map's values) is loaded into the vehicles layer.
+                        val animatorToVehicleMap = mutableMapOf<ValueAnimator, Feature>()
+
+                        newVehicleFeatures.map { newVehicle ->
+                            val oldVehicle = mapViewModel.previousVehicleFeatures.firstOrNull {
+                                it.getNumberProperty(VEHICLE_ID).toInt() ==
+                                        newVehicle.getNumberProperty(VEHICLE_ID).toInt()
                             }
-                        )
+                            // We'll animate from the first to the second for each pair.
+                            // If the vehicle is new, we'll "animate" starting at its new position.
+                            (oldVehicle ?: newVehicle) to newVehicle
+                        }.forEach { vehiclePair ->
+                            val oldVehicle = vehiclePair.first
+                            val newVehicle = vehiclePair.second
+
+                            val oldLatLngHeading = LatLngHeading(
+                                oldVehicle.getNumberProperty(LATITUDE).toDouble(),
+                                oldVehicle.getNumberProperty(LONGITUDE).toDouble(),
+                                oldVehicle.getNumberProperty(HEADING).toInt()
+                            )
+                            val newLatLngHeading = LatLngHeading(
+                                newVehicle.getNumberProperty(LATITUDE).toDouble(),
+                                newVehicle.getNumberProperty(LONGITUDE).toDouble(),
+                                newVehicle.getNumberProperty(HEADING).toInt()
+                            )
+
+                            ObjectAnimator.ofObject(
+                                vehicleEvaluator,
+                                oldLatLngHeading,
+                                newLatLngHeading
+                            ).apply {
+                                animatorToVehicleMap[this] = oldVehicle
+                                addUpdateListener {
+                                    val latLngHeading = animatedValue as LatLngHeading
+                                    val interpolatedVehicle = Feature.fromGeometry(
+                                        Point.fromLngLat(
+                                            latLngHeading.longitude,
+                                            latLngHeading.latitude
+                                        ),
+                                        newVehicle.properties()
+                                    ).apply {
+                                        // The latitude and longitude added here aren't used for animation,
+                                        // but it might be good to have them be accurate if e.g. the
+                                        // vehicle is searched for while animating.
+                                        addNumberProperty(LATITUDE, latLngHeading.latitude)
+                                        addNumberProperty(LONGITUDE, latLngHeading.longitude)
+                                        addNumberProperty(HEADING, latLngHeading.heading)
+                                    }
+                                    // Update the entry for this feature
+                                    animatorToVehicleMap[this] = interpolatedVehicle
+                                    // Display current data
+                                    (style.getSource(VEHICLES_SOURCE) as? GeoJsonSource)?.setGeoJson(
+                                        FeatureCollection.fromFeatures(animatorToVehicleMap.values.toList())
+                                    )
+                                }
+                                addListener(onEnd = {
+                                    // Next time new data comes in, animate starting with the data we received this time
+                                    mapViewModel.previousVehicleFeatures = newVehicleFeatures
+                                })
+                            }
+                        }
+
+                        // Cancel any old animations before starting the new ones
+                        mapViewModel.vehiclesAnimatorSet.cancel()
+                        mapViewModel.vehiclesAnimatorSet = AnimatorSet().apply {
+                            playTogether(animatorToVehicleMap.keys as Collection<Animator>?)
+                            duration = 1000
+                            start()
+                        }
                     }
-                    mapViewModel.vehicleItems = vehicleFeatures.map {
+
+                    mapViewModel.vehicleItems = newVehicleFeatures.map {
                         RutgersPlacesSearchAdapter.AdapterPlaceItem(
                             resources.getDrawable(R.drawable.ic_navigation_black_24dp, null),
                             PlaceType.VEHICLE,
@@ -470,7 +561,7 @@ class MapFragment : Fragment() {
 
                     // If the user has a vehicle selected, update the selection
                     if (mapViewModel.selectedPlaceType == PlaceType.VEHICLE) {
-                        val newVehicleFeature = vehicleFeatures.firstOrNull {
+                        val newVehicleFeature = newVehicleFeatures.firstOrNull {
                             it.getNumberProperty(VEHICLE_ID).toInt() ==
                                     mapViewModel.selectedFeature!!
                                         .getNumberProperty(VEHICLE_ID).toInt()
