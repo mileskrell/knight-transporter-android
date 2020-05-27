@@ -1,5 +1,8 @@
 package edu.rutgers.knighttransporter
 
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.os.Bundle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -29,6 +32,13 @@ class MapViewModel : ViewModel() {
 
     var selectedFeature: Feature? = null
     var selectedPlaceType: PlaceType? = null
+
+    var vehiclesHaveBeenAdded = false
+    var previousVehicleFeatures = emptyList<Feature>()
+    var latestVehicleFeatures = emptyList<Feature>()
+    var interpolatedVehicleFeatures = MutableLiveData(emptyList<Feature>())
+    var animatorSet = AnimatorSet()
+
 
     private val repository = Repository { newRoutes ->
         _routes.postValue(newRoutes)
