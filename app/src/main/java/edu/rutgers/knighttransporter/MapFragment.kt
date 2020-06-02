@@ -522,7 +522,7 @@ class MapFragment : Fragment() {
                                     // Update the entry for this feature
                                     animatorToVehicleMap[this] = interpolatedVehicle
                                     // Display current data
-                                    (style.getSource(VEHICLES_SOURCE) as? GeoJsonSource)?.setGeoJson(
+                                    (style.getSource(VEHICLES_SOURCE) as GeoJsonSource).setGeoJson(
                                         FeatureCollection.fromFeatures(animatorToVehicleMap.values.toList())
                                     )
                                     if (mapViewModel.selectedPlaceType == PlaceType.VEHICLE &&
