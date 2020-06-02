@@ -23,5 +23,3 @@ const val buildingArcGISDetailsPath = "Completed_Rutgers_Building_List/FeatureSe
 const val walkwaysUrl = arcGISbaseUrl + walkwaysPath
 const val buildingsUrl = arcGISbaseUrl + buildingsPath
 const val parkingLotsUrl = arcGISbaseUrl + parkingLotsPath
-
-const val translocUrl = "http://192.168.1.11:3000/"
