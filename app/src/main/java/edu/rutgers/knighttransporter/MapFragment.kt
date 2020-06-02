@@ -1,6 +1,7 @@
 package edu.rutgers.knighttransporter
 
 import android.animation.*
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import android.view.*
@@ -135,6 +136,7 @@ class MapFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
+    @SuppressLint("MissingPermission") // We check that permissions are granted on the first line
     private fun enableLocationComponent(style: Style) {
         if (PermissionsManager.areLocationPermissionsGranted(requireContext())) {
             mapboxMap.locationComponent.apply {
