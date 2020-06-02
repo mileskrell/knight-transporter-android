@@ -9,7 +9,6 @@ import edu.rutgers.knighttransporter.bottom_sheets.BuildingArcGISDetailsFeatureC
 import edu.rutgers.knighttransporter.bottom_sheets.RutgersCloudStorageService
 import edu.rutgers.knighttransporter.feature_stuff.ArcGISService
 import edu.rutgers.knighttransporter.feature_stuff.arcGISbaseUrl
-import edu.rutgers.knighttransporter.feature_stuff.translocUrl
 import edu.rutgers.knighttransporter.for_transloc.Route
 import io.socket.client.IO
 import io.socket.client.Socket
@@ -28,7 +27,7 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
     private var buildings: FeatureCollection? = null
     private var buildingArcGISDetailsList: List<BuildingArcGISDetails>? = null
 
-    private val translocSocket = IO.socket(translocUrl).connect().apply {
+    private val translocSocket = IO.socket(busServerUrl).connect().apply {
         on(Socket.EVENT_CONNECT) {
             Log.d(TAG, "Connected")
         }.on(Socket.EVENT_CONNECTING) {
