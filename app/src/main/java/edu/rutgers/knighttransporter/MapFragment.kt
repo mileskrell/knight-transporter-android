@@ -525,6 +525,14 @@ class MapFragment : Fragment() {
                                     (style.getSource(VEHICLES_SOURCE) as? GeoJsonSource)?.setGeoJson(
                                         FeatureCollection.fromFeatures(animatorToVehicleMap.values.toList())
                                     )
+                                    if (mapViewModel.selectedPlaceType == PlaceType.VEHICLE &&
+                                        mapViewModel.selectedFeature!!
+                                            .getNumberProperty(VEHICLE_ID).toInt()
+                                        == interpolatedVehicle.getNumberProperty(VEHICLE_ID).toInt()
+                                    ) {
+                                        (style.getSource(SELECTED_PLACE_SOURCE) as GeoJsonSource)
+                                            .setGeoJson(interpolatedVehicle)
+                                    }
                                 }
                                 addListener(onEnd = {
                                     // Next time new data comes in, animate starting with the data we received this time
@@ -559,7 +567,8 @@ class MapFragment : Fragment() {
                     )
                     searchView.setAdapter(mapViewModel.searchAdapter)
 
-                    // If the user has a vehicle selected, update the selection
+                    // If the user has a vehicle selected and that vehicle isn't present
+                    // in the new data, clear the selection.
                     if (mapViewModel.selectedPlaceType == PlaceType.VEHICLE) {
                         val newVehicleFeature = newVehicleFeatures.firstOrNull {
                             it.getNumberProperty(VEHICLE_ID).toInt() ==
@@ -573,9 +582,9 @@ class MapFragment : Fragment() {
                                 "Sorry - selected vehicle doesn't exist in the latest data",
                                 Toast.LENGTH_LONG
                             ).show()
-                        } else {
-                            setSelectedPlace(PlaceType.VEHICLE, newVehicleFeature)
                         }
+                        // If there *is* a new vehicle to animate to, that's handled where we handle
+                        // the other vehicle animations.
                     }
                 }
 
