@@ -200,9 +200,11 @@ class MapFragment : Fragment() {
                     }
                 }
                 else -> {
-                    LineLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).withProperties(
-                        PropertyFactory.lineColor(0xFFFF00FF.toInt()),
-                        PropertyFactory.lineWidth(5f)
+                    FillLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).withProperties(
+                        PropertyFactory.fillColor(
+                            (if (placeType == PlaceType.PARKING_LOT) 0x88FF00FF else 0xFFFF00FF)
+                                .toInt()
+                        )
                     ).run {
                         // Add layer as high as possible
                         style.addLayerAbove(
