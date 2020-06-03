@@ -70,6 +70,7 @@ class MapFragment : Fragment() {
         const val SELECTED_PLACE_LAYER = "rSelectedPlace-layer"
         const val RUTGERS_BUS_ICON = "rutgers-bus-icon"
         const val RUTGERS_STOP_ICON = "rutgers-stop-icon"
+        const val RUTGERS_STOP_ICON_SELECTED = "rutgers-stop-icon-selected"
         const val BOTTOM_SHEET_FRAGMENT = "bottom sheet fragment"
     }
 
@@ -179,8 +180,7 @@ class MapFragment : Fragment() {
             when (placeType) {
                 PlaceType.STOP -> {
                     SymbolLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).withProperties(
-                        PropertyFactory.iconColor(0xFFFF00FF.toInt()),
-                        PropertyFactory.iconImage(RUTGERS_STOP_ICON),
+                        PropertyFactory.iconImage(RUTGERS_STOP_ICON_SELECTED),
                         PropertyFactory.iconAllowOverlap(true)
                     ).run {
                         // We definitely have a stops layer
@@ -281,7 +281,7 @@ class MapFragment : Fragment() {
                 // TODO: Is this the best way to do this? Does it work with all map styles?
                 mapViewModel.firstLabelLayerId = style.layers.first { it.id.contains("label") }.id
 
-                // add bus marker
+                // add map icons
                 style.addImage(
                     RUTGERS_BUS_ICON,
                     BitmapUtils.getBitmapFromDrawable(
@@ -292,9 +292,16 @@ class MapFragment : Fragment() {
                 style.addImage(
                     RUTGERS_STOP_ICON,
                     BitmapUtils.getBitmapFromDrawable(
-                        resources.getDrawable(R.drawable.circle, null)
+                        resources.getDrawable(R.drawable.ic_bus_stop, null)
                     )!!,
-                    true // This lets us change its color
+                    false // Use colors from drawable
+                )
+                style.addImage(
+                    RUTGERS_STOP_ICON_SELECTED,
+                    BitmapUtils.getBitmapFromDrawable(
+                        resources.getDrawable(R.drawable.ic_bus_stop_selected, null)
+                    )!!,
+                    false // Use colors from drawable
                 )
                 mapboxMap.addOnMapClickListener { latLng ->
                     routes_speed_dial.close()
@@ -392,7 +399,6 @@ class MapFragment : Fragment() {
                             )
                         )
                         SymbolLayer(STOPS_LAYER, STOPS_SOURCE).withProperties(
-                            PropertyFactory.iconColor("#ffa500"),
                             PropertyFactory.iconImage(RUTGERS_STOP_ICON),
                             PropertyFactory.iconAllowOverlap(true)
                         ).run {
@@ -405,7 +411,7 @@ class MapFragment : Fragment() {
                         }
                         mapViewModel.stopItems = busStopFeatures.map {
                             RutgersPlacesSearchAdapter.AdapterPlaceItem(
-                                resources.getDrawable(R.drawable.circle, null),
+                                resources.getDrawable(R.drawable.ic_bus_stop, null),
                                 PlaceType.STOP,
                                 it
                             )
