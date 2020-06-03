@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.mapbox.geojson.Feature
+import com.mapbox.mapboxsdk.geometry.LatLng
 import edu.rutgers.knighttransporter.feature_stuff.PlaceType
 import edu.rutgers.knighttransporter.for_transloc.Route
 import edu.rutgers.knighttransporter.for_transloc.StopMarkerData
@@ -30,6 +31,7 @@ class MapViewModel : ViewModel() {
 
     var selectedFeature: Feature? = null
     var selectedPlaceType: PlaceType? = null
+    var tappedLatLng: LatLng? = null
 
     // The starting place for the vehicle animations
     var previousVehicleFeatures = emptyList<Feature>()

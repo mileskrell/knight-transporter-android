@@ -32,8 +32,11 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.expressions.Expression.get
-import com.mapbox.mapboxsdk.style.layers.*
+import com.mapbox.mapboxsdk.style.layers.FillLayer
+import com.mapbox.mapboxsdk.style.layers.Property
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import com.miguelcatalan.materialsearchview.MaterialSearchView
@@ -169,11 +172,13 @@ class MapFragment : Fragment() {
 
     /**
      * Clear selected place and select a new one
+     * @param tappedLatLng The LatLng that was tapped, or null if not triggered by a map click
      */
-    private fun setSelectedPlace(placeType: PlaceType, feature: Feature) {
+    private fun setSelectedPlace(placeType: PlaceType, feature: Feature, tappedLatLng: LatLng?) {
         style?.let { style ->
             mapViewModel.selectedFeature = feature
             mapViewModel.selectedPlaceType = placeType
+            mapViewModel.tappedLatLng = tappedLatLng
             style.removeLayer(SELECTED_PLACE_LAYER)
             style.removeSource(SELECTED_PLACE_SOURCE)
             style.addSource(GeoJsonSource(SELECTED_PLACE_SOURCE, feature))
@@ -246,6 +251,7 @@ class MapFragment : Fragment() {
         return style?.let { style ->
             mapViewModel.selectedFeature = null
             mapViewModel.selectedPlaceType = null
+            mapViewModel.tappedLatLng = null
             val removedLayer = style.removeLayer(SELECTED_PLACE_LAYER)
             style.removeSource(SELECTED_PLACE_SOURCE)
             BottomSheetBehavior.from(map_bottom_sheet).state = BottomSheetBehavior.STATE_HIDDEN
@@ -274,7 +280,42 @@ class MapFragment : Fragment() {
                 }
 
                 override fun onMove(detector: MoveGestureDetector) {}
-                override fun onMoveEnd(detector: MoveGestureDetector) {}
+                override fun onMoveEnd(detector: MoveGestureDetector) {
+                    // The "feature" that's selected is only the visible part of whatever we wanted
+                    // to select, so we have to re-select it as we move around. Otherwise, we'd see:
+                    //  - inexact borders if we tap and then zoom in more
+                    //  - unselected parts if we tap while zoomed in super far
+                    // Unfortunately, this doesn't help with the case of tapping while zoomed in
+                    // and then panning to another part of the feature so that the initial part is
+                    // off-screen. That will still result in unselected parts until you zoom out.
+
+                    // We could do this in onMove() instead, but that would cause way too much lag.
+                    if (mapViewModel.tappedLatLng != null) {
+                        val layerToQuery = when (mapViewModel.selectedPlaceType) {
+                            PlaceType.VEHICLE -> VEHICLES_LAYER
+                            PlaceType.STOP -> STOPS_LAYER
+                            PlaceType.BUILDING -> BUILDINGS_LAYER
+                            PlaceType.PARKING_LOT -> PARKING_LOTS_LAYER
+                            else -> throw RuntimeException("tappedPoint isn't null and selectedPlaceType is ${mapViewModel.selectedPlaceType?.name}")
+                        }
+
+                        val tappedThings =
+                            mapboxMap.queryRenderedFeatures(
+                                mapboxMap.projection.toScreenLocation(mapViewModel.tappedLatLng!!),
+                                layerToQuery
+                            )
+                        if (tappedThings.isNotEmpty()) {
+                            setSelectedPlace(
+                                mapViewModel.selectedPlaceType!!,
+                                tappedThings.first(),
+                                mapViewModel.tappedLatLng
+                            )
+                        } else {
+                            // This just means that the tapped LatLng is off-screen. We can't update
+                            // the selection, so we'll just leave it as-is.
+                        }
+                    }
+                }
             })
             mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
                 this.style = style
@@ -312,26 +353,26 @@ class MapFragment : Fragment() {
 
                     val tappedVehicles = mapboxMap.queryRenderedFeatures(point, VEHICLES_LAYER)
                     if (tappedVehicles.isNotEmpty()) {
-                        setSelectedPlace(PlaceType.VEHICLE, tappedVehicles.first())
+                        setSelectedPlace(PlaceType.VEHICLE, tappedVehicles.first(), latLng)
                         return@addOnMapClickListener true
                     }
 
                     val tappedStops = mapboxMap.queryRenderedFeatures(point, STOPS_LAYER)
                     if (tappedStops.isNotEmpty()) {
-                        setSelectedPlace(PlaceType.STOP, tappedStops.first())
+                        setSelectedPlace(PlaceType.STOP, tappedStops.first(), latLng)
                         return@addOnMapClickListener true
                     }
 
                     val tappedBuildings = mapboxMap.queryRenderedFeatures(point, BUILDINGS_LAYER)
                     if (tappedBuildings.isNotEmpty()) {
-                        setSelectedPlace(PlaceType.BUILDING, tappedBuildings.first())
+                        setSelectedPlace(PlaceType.BUILDING, tappedBuildings.first(), latLng)
                         return@addOnMapClickListener true
                     }
 
                     val tappedParkingLots =
                         mapboxMap.queryRenderedFeatures(point, PARKING_LOTS_LAYER)
                     if (tappedParkingLots.isNotEmpty()) {
-                        setSelectedPlace(PlaceType.PARKING_LOT, tappedParkingLots.first())
+                        setSelectedPlace(PlaceType.PARKING_LOT, tappedParkingLots.first(), latLng)
                         return@addOnMapClickListener true
                     }
 
@@ -641,7 +682,7 @@ class MapFragment : Fragment() {
                             )
                         )
                         val placeItem = mapViewModel.searchAdapter.getItem(position)
-                        setSelectedPlace(placeItem.placeType, placeItem.feature)
+                        setSelectedPlace(placeItem.placeType, placeItem.feature, null)
                     }
 
                     activity?.runOnUiThread {
