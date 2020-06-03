@@ -173,8 +173,14 @@ class MapFragment : Fragment() {
     /**
      * Clear selected place and select a new one
      * @param tappedLatLng The LatLng that was tapped, or null if not triggered by a map click
+     * @param reselecting If true, leaves bottom sheet alone
      */
-    private fun setSelectedPlace(placeType: PlaceType, feature: Feature, tappedLatLng: LatLng?) {
+    private fun setSelectedPlace(
+        placeType: PlaceType,
+        feature: Feature,
+        tappedLatLng: LatLng?,
+        reselecting: Boolean = false
+    ) {
         style?.let { style ->
             mapViewModel.selectedFeature = feature
             mapViewModel.selectedPlaceType = placeType
@@ -223,23 +229,25 @@ class MapFragment : Fragment() {
                     }
                 }
             }
-            childFragmentManager.commitNow {
-                replace(
-                    R.id.map_bottom_sheet,
-                    when (placeType) {
-                        PlaceType.WALKWAY -> throw IllegalStateException("Bottom sheet should not be created for walkways")
-                        PlaceType.PARKING_LOT -> ParkingLotFragment.newInstance(
-                            feature.toJson()
-                        )
-                        PlaceType.BUILDING -> BuildingFragment.newInstance(feature.toJson())
-                        PlaceType.STOP -> StopFragment.newInstance(feature.toJson())
-                        PlaceType.VEHICLE -> VehicleFragment.newInstance(feature.toJson())
-                    },
-                    BOTTOM_SHEET_FRAGMENT
-                )
+            if (!reselecting) {
+                childFragmentManager.commitNow {
+                    replace(
+                        R.id.map_bottom_sheet,
+                        when (placeType) {
+                            PlaceType.WALKWAY -> throw IllegalStateException("Bottom sheet should not be created for walkways")
+                            PlaceType.PARKING_LOT -> ParkingLotFragment.newInstance(
+                                feature.toJson()
+                            )
+                            PlaceType.BUILDING -> BuildingFragment.newInstance(feature.toJson())
+                            PlaceType.STOP -> StopFragment.newInstance(feature.toJson())
+                            PlaceType.VEHICLE -> VehicleFragment.newInstance(feature.toJson())
+                        },
+                        BOTTOM_SHEET_FRAGMENT
+                    )
+                }
+                BottomSheetBehavior.from(map_bottom_sheet).state =
+                    BottomSheetBehavior.STATE_HALF_EXPANDED
             }
-            BottomSheetBehavior.from(map_bottom_sheet).state =
-                BottomSheetBehavior.STATE_HALF_EXPANDED
         }
     }
 
@@ -308,7 +316,8 @@ class MapFragment : Fragment() {
                             setSelectedPlace(
                                 mapViewModel.selectedPlaceType!!,
                                 tappedThings.first(),
-                                mapViewModel.tappedLatLng
+                                mapViewModel.tappedLatLng,
+                                true
                             )
                         } else {
                             // This just means that the tapped LatLng is off-screen. We can't update
