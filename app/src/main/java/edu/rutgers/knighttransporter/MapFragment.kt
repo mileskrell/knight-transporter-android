@@ -289,8 +289,8 @@ class MapFragment : Fragment() {
 
                 override fun onMove(detector: MoveGestureDetector) {}
                 override fun onMoveEnd(detector: MoveGestureDetector) {
-                    // The "feature" that's selected is only the visible part of whatever we wanted
-                    // to select, so we have to re-select it as we move around. Otherwise, we'd see:
+                    // The part of the feature that gets selected is related to what part is visible
+                    // when tapped, so we have to reselect it as we move. Otherwise, we'd see:
                     //  - inexact borders if we tap and then zoom in more
                     //  - unselected parts if we tap while zoomed in super far
                     // Unfortunately, this doesn't help with the case of tapping while zoomed in
@@ -298,6 +298,7 @@ class MapFragment : Fragment() {
                     // off-screen. That will still result in unselected parts until you zoom out.
 
                     // We could do this in onMove() instead, but that would cause way too much lag.
+                    // TODO: Don't reselect if it would result in a smaller area being selected than before
                     if (mapViewModel.tappedLatLng != null) {
                         val layerToQuery = when (mapViewModel.selectedPlaceType) {
                             PlaceType.VEHICLE -> VEHICLES_LAYER
