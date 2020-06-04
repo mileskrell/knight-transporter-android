@@ -21,7 +21,6 @@ import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.Point
-import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
@@ -51,7 +50,7 @@ import kotlinx.android.synthetic.main.fragment_map.*
 import kotlinx.coroutines.launch
 import java.net.URI
 
-class MapFragment : Fragment() {
+class MapFragment : Fragment(R.layout.fragment_map) {
 
     companion object {
         const val MIN_ZOOM = 7.0
@@ -128,16 +127,6 @@ class MapFragment : Fragment() {
         val interpolatedHeading = (startValue.heading +
                 (endValue.heading - startValue.heading) * fraction).toInt()
         LatLngHeading(interpolatedLat, interpolatedLng, interpolatedHeading)
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        Mapbox.getInstance(requireContext(), mapboxToken)
-        searchView = (requireActivity() as MainActivity).search_view
-        return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
     @SuppressLint("MissingPermission") // We check that permissions are granted on the first line
@@ -272,6 +261,7 @@ class MapFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setHasOptionsMenu(true)
+        searchView = (requireActivity() as MainActivity).search_view
         BottomSheetBehavior.from(map_bottom_sheet).state = BottomSheetBehavior.STATE_HIDDEN
         // Don't let gestures pass through bottom sheet to MapView
         map_bottom_sheet.setOnTouchListener { _, _ -> true }
