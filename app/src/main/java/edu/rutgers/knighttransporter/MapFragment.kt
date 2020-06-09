@@ -83,7 +83,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
 
     private lateinit var mapView: MapView
     private lateinit var mapboxMap: MapboxMap
-    private var style: Style? = null
+    private lateinit var style: Style
 
     private var parkingLayer: FillLayer? = null
     private var buildingLayer: FillLayer? = null
@@ -171,7 +171,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         tappedLatLng: LatLng?,
         reselecting: Boolean = false
     ) {
-        style?.let { style ->
+        if (::style.isInitialized) {
             mapViewModel.selectedFeature = feature
             mapViewModel.selectedPlaceType = placeType
             mapViewModel.tappedLatLng = tappedLatLng
@@ -246,7 +246,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
      * @return whether a place was deselected
      */
     fun clearSelectedPlace(): Boolean {
-        return style?.let { style ->
+        return if (::style.isInitialized) {
             mapViewModel.selectedFeature = null
             mapViewModel.selectedPlaceType = null
             mapViewModel.tappedLatLng = null
@@ -257,7 +257,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                 childFragmentManager.commitNow { remove(it) }
             }
             removedLayer
-        } ?: false
+        } else false
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
