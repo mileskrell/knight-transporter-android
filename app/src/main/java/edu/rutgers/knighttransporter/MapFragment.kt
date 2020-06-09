@@ -48,6 +48,7 @@ import edu.rutgers.knighttransporter.feature_stuff.*
 import edu.rutgers.knighttransporter.for_transloc.StopMarkerData
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_map.*
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import java.net.URI
 
@@ -646,8 +647,14 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                     }
                 }
 
-                mapViewModel.viewModelScope.launch {
-                    // TODO: Make sure these fail gracefully
+                mapViewModel.viewModelScope.launch(CoroutineExceptionHandler { _, _ ->
+                    Toast.makeText(
+                        requireContext(),
+                        "Error fetching buildings and parking lots",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }) {
+                    // TODO: If this fails due to lack of an Internet connection, retry
 //                    mapViewModel.getWalkways() // TODO: Do I have any use for the walkway data here?
                     val parkingLots = mapViewModel.getParkingLots()
                     val buildings = mapViewModel.getBuildings()
