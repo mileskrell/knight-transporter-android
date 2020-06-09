@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.View
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -21,6 +22,7 @@ import edu.rutgers.knighttransporter.R
 import edu.rutgers.knighttransporter.createRutgersMarkwon
 import edu.rutgers.knighttransporter.feature_stuff.*
 import kotlinx.android.synthetic.main.fragment_place_sheet_building.*
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -123,7 +125,16 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
             })
             .into(place_sheet_building_image)
 
-        mapViewModel.viewModelScope.launch(context = Dispatchers.Main) {
+        // TODO: If these fail due to lack of an Internet connection,
+        //  we should automatically retry them when possible.
+
+        mapViewModel.viewModelScope.launch(CoroutineExceptionHandler { _, _ ->
+            Toast.makeText(
+                requireContext(),
+                "Error fetching description, website, and alerts for this building",
+                Toast.LENGTH_SHORT
+            ).show()
+        }) {
             val autoLinkMarkwon = createRutgersMarkwon(requireContext(), true)
             val arcGISDetails = withContext(Dispatchers.Default) {
                 mapViewModel.getBuildingArcGISDetails(buildingNumber)
@@ -149,7 +160,13 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
             }
         }
 
-        mapViewModel.viewModelScope.launch(context = Dispatchers.Main) {
+        mapViewModel.viewModelScope.launch(CoroutineExceptionHandler { _, _ ->
+            Toast.makeText(
+                requireContext(),
+                "Error fetching department list and ZIP code for this building",
+                Toast.LENGTH_SHORT
+            ).show()
+        }) {
             val cloudStorageDetails = withContext(Dispatchers.Default) {
                 mapViewModel.getBuildingCloudStorageDetails(buildingNumber)
             }
