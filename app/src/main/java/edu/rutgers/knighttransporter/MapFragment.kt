@@ -71,7 +71,6 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         const val VEHICLES_LAYER = "rVehicles-layer"
         const val SELECTED_PLACE_SOURCE = "rSelectedPlace-source"
         const val SELECTED_PLACE_LAYER = "rSelectedPlace-layer"
-        const val RUTGERS_BUS_ICON = "rutgers-bus-icon"
         const val RUTGERS_BUS_ICON_SELECTED = "rutgers-bus-icon-selected"
         const val RUTGERS_STOP_ICON = "rutgers-stop-icon"
         const val RUTGERS_STOP_ICON_SELECTED = "rutgers-stop-icon-selected"
@@ -326,40 +325,29 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                 mapViewModel.firstLabelLayerId = style.layers.first { it.id.contains("label") }.id
 
                 // add map icons
-                style.addImage(
-                    RUTGERS_BUS_ICON,
-                    BitmapUtils.getBitmapFromDrawable(
-                        resources.getDrawable(R.drawable.ic_bus, null)
-                    )!!,
-                    false // Use colors from drawable
-                )
-                style.addImage(
-                    RUTGERS_BUS_ICON_SELECTED,
-                    BitmapUtils.getBitmapFromDrawable(
-                        resources.getDrawable(R.drawable.ic_bus_selected, null)
-                    )!!,
-                    false // Use colors from drawable
-                )
-                // The stop icon drawables need an intrinsic size to be converted to bitmaps
                 val stopIconSize = requireContext().convertDpToPixel(24f).toInt()
-                style.addImage(
-                    RUTGERS_STOP_ICON,
-                    BitmapUtils.getBitmapFromDrawable(
-                        resources.getDrawable(R.drawable.ic_bus_stop, null).apply {
-                            (this as GradientDrawable).setSize(stopIconSize, stopIconSize)
-                        }
-                    )!!,
-                    false // Use colors from drawable
-                )
-                style.addImage(
-                    RUTGERS_STOP_ICON_SELECTED,
-                    BitmapUtils.getBitmapFromDrawable(
-                        resources.getDrawable(R.drawable.ic_bus_stop_selected, null).apply {
-                            (this as GradientDrawable).setSize(stopIconSize, stopIconSize)
-                        }
-                    )!!,
-                    false // Use colors from drawable
-                )
+                mapOf(
+                    RUTGERS_STOP_ICON to R.drawable.ic_bus_stop,
+                    RUTGERS_STOP_ICON_SELECTED to R.drawable.ic_bus_stop_selected,
+                    // TODO: Use a different color for the selected bus? This is the same as Route A.
+                    RUTGERS_BUS_ICON_SELECTED to R.drawable.ic_bus_selected,
+                    *TransLocRoute.values().map { route ->
+                        route.getRouteId().toString() to route.getVehicleDrawableInt()
+                    }.toTypedArray()
+                ).forEach {
+                    style.addImage(
+                        it.key,
+                        BitmapUtils.getBitmapFromDrawable(
+                            resources.getDrawable(it.value, null).apply {
+                                if (it.key == RUTGERS_STOP_ICON || it.key == RUTGERS_STOP_ICON_SELECTED) {
+                                    // The stop icon drawables need an intrinsic size to be converted to bitmaps
+                                    (this as GradientDrawable).setSize(stopIconSize, stopIconSize)
+                                }
+                            }
+                        )!!,
+                        false // Use colors from drawable
+                    )
+                }
                 mapboxMap.addOnMapClickListener { latLng ->
                     routes_speed_dial.close()
                     searchView.closeSearch()
@@ -497,6 +485,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                                     Point.fromLngLat(vehicle.location.lng, vehicle.location.lat)
                                 ).apply {
                                     addStringProperty(ROUTE_NAME, route.longName)
+                                    addStringProperty(ROUTE_ID, route.routeId.toString())
                                     addNumberProperty(VEHICLE_ID, vehicle.vehicleId)
                                     addNumberProperty(HEADING, vehicle.heading)
                                     addStringProperty(COLOR, "#${route.color}")
@@ -518,7 +507,9 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                             )
                         )
                         SymbolLayer(VEHICLES_LAYER, VEHICLES_SOURCE).withProperties(
-                            PropertyFactory.iconImage(RUTGERS_BUS_ICON),
+                            // TODO: If we don't have a drawable for this route ID,
+                            //  **nothing** will be displayed for this vehicle.
+                            PropertyFactory.iconImage(get(ROUTE_ID)),
                             PropertyFactory.iconRotate(get(HEADING)),
                             PropertyFactory.iconSize(1.5f),
                             PropertyFactory.iconAllowOverlap(true)
@@ -617,7 +608,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
 
                     mapViewModel.vehicleItems = newVehicleFeatures.map {
                         RutgersPlacesSearchAdapter.AdapterPlaceItem(
-                            resources.getDrawable(R.drawable.ic_bus, null),
+                            resources.getDrawable(R.drawable.ic_bus_all_campuses, null),
                             PlaceType.VEHICLE,
                             it
                         )
