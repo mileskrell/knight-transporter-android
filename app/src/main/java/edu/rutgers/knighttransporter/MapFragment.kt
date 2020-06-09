@@ -72,6 +72,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         const val SELECTED_PLACE_SOURCE = "rSelectedPlace-source"
         const val SELECTED_PLACE_LAYER = "rSelectedPlace-layer"
         const val RUTGERS_BUS_ICON = "rutgers-bus-icon"
+        const val RUTGERS_BUS_ICON_SELECTED = "rutgers-bus-icon-selected"
         const val RUTGERS_STOP_ICON = "rutgers-stop-icon"
         const val RUTGERS_STOP_ICON_SELECTED = "rutgers-stop-icon-selected"
         const val BOTTOM_SHEET_FRAGMENT = "bottom sheet fragment"
@@ -190,8 +191,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                 }
                 PlaceType.VEHICLE -> {
                     SymbolLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).withProperties(
-                        PropertyFactory.iconColor(0xFFFF00FF.toInt()),
-                        PropertyFactory.iconImage(RUTGERS_BUS_ICON),
+                        PropertyFactory.iconImage(RUTGERS_BUS_ICON_SELECTED),
                         PropertyFactory.iconRotate(get(HEADING)),
                         PropertyFactory.iconSize(1.5f),
                         PropertyFactory.iconAllowOverlap(true)
@@ -329,9 +329,16 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                 style.addImage(
                     RUTGERS_BUS_ICON,
                     BitmapUtils.getBitmapFromDrawable(
-                        resources.getDrawable(R.drawable.ic_navigation_black_24dp, null)
+                        resources.getDrawable(R.drawable.ic_bus, null)
                     )!!,
-                    true // This lets us change its color
+                    false // Use colors from drawable
+                )
+                style.addImage(
+                    RUTGERS_BUS_ICON_SELECTED,
+                    BitmapUtils.getBitmapFromDrawable(
+                        resources.getDrawable(R.drawable.ic_bus_selected, null)
+                    )!!,
+                    false // Use colors from drawable
                 )
                 // The stop icon drawables need an intrinsic size to be converted to bitmaps
                 val stopIconSize = requireContext().convertDpToPixel(24f).toInt()
@@ -610,7 +617,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
 
                     mapViewModel.vehicleItems = newVehicleFeatures.map {
                         RutgersPlacesSearchAdapter.AdapterPlaceItem(
-                            resources.getDrawable(R.drawable.ic_navigation_black_24dp, null),
+                            resources.getDrawable(R.drawable.ic_bus, null),
                             PlaceType.VEHICLE,
                             it
                         )
