@@ -49,6 +49,7 @@ const val STOP_NAME = "stop name"
 
 // Vehicles
 const val ROUTE_NAME = "route name"
+const val ROUTE_ID = "route ID"
 const val VEHICLE_ID = "vehicle ID"
 const val HEADING = "heading"
 const val COLOR = "color"
