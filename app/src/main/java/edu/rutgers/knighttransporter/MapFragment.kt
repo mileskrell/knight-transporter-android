@@ -3,6 +3,7 @@ package edu.rutgers.knighttransporter
 import android.animation.*
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
@@ -332,17 +333,23 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                     )!!,
                     true // This lets us change its color
                 )
+                // The stop icon drawables need an intrinsic size to be converted to bitmaps
+                val stopIconSize = requireContext().convertDpToPixel(24f).toInt()
                 style.addImage(
                     RUTGERS_STOP_ICON,
                     BitmapUtils.getBitmapFromDrawable(
-                        resources.getDrawable(R.drawable.ic_bus_stop, null)
+                        resources.getDrawable(R.drawable.ic_bus_stop, null).apply {
+                            (this as GradientDrawable).setSize(stopIconSize, stopIconSize)
+                        }
                     )!!,
                     false // Use colors from drawable
                 )
                 style.addImage(
                     RUTGERS_STOP_ICON_SELECTED,
                     BitmapUtils.getBitmapFromDrawable(
-                        resources.getDrawable(R.drawable.ic_bus_stop_selected, null)
+                        resources.getDrawable(R.drawable.ic_bus_stop_selected, null).apply {
+                            (this as GradientDrawable).setSize(stopIconSize, stopIconSize)
+                        }
                     )!!,
                     false // Use colors from drawable
                 )
