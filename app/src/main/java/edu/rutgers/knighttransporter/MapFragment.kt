@@ -33,10 +33,7 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.expressions.Expression
-import com.mapbox.mapboxsdk.style.layers.FillLayer
-import com.mapbox.mapboxsdk.style.layers.Property
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory
-import com.mapbox.mapboxsdk.style.layers.SymbolLayer
+import com.mapbox.mapboxsdk.style.layers.*
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import com.miguelcatalan.materialsearchview.MaterialSearchView
@@ -684,6 +681,26 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                     popularDestinationsLayer =
                         SymbolLayer(POPULAR_DESTINATIONS_LAYER, POPULAR_DESTINATIONS_SOURCE)
                             .withProperties(
+                                // Only show if zoom level is over 12.25
+                                PropertyFactory.textOpacity(
+                                    Expression.interpolate(
+                                        Expression.Interpolator.linear(),
+                                        Expression.zoom(),
+                                        // Fade the labels in between zoom levels 12.25 and 12.75
+                                        Expression.stop(
+                                            Expression.literal(12.25f),
+                                            Expression.literal(0f)
+                                        ),
+                                        Expression.stop(
+                                            Expression.literal(12.75f),
+                                            Expression.literal(1f)
+                                        )
+                                    )
+                                    /*Expression.step(
+                                        Expression.zoom(), Expression.literal(0f),
+                                        Expression.literal(12.25f), Expression.literal(1f)
+                                    )*/
+                                ),
                                 PropertyFactory.textField(Expression.get(POPULAR_DESTINATION)),
                                 PropertyFactory.textSize(12f),
                                 PropertyFactory.textColor(
