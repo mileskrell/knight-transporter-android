@@ -7,8 +7,7 @@ import com.mapbox.geojson.FeatureCollection
 import edu.rutgers.knighttransporter.bottom_sheets.BuildingArcGISDetailsFeatureCollection
 import edu.rutgers.knighttransporter.bottom_sheets.BuildingArcGISDetailsFeatureCollection.Feature.BuildingArcGISDetails
 import edu.rutgers.knighttransporter.bottom_sheets.RutgersCloudStorageService
-import edu.rutgers.knighttransporter.feature_stuff.ArcGISService
-import edu.rutgers.knighttransporter.feature_stuff.arcGISbaseUrl
+import edu.rutgers.knighttransporter.feature_stuff.*
 import edu.rutgers.knighttransporter.for_transloc.Route
 import io.socket.client.IO
 import io.socket.client.Socket
@@ -70,9 +69,28 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
             .also { parkingLots = it }
     }
 
-    suspend fun getBuildings() = buildings ?: arcGISService.getBuildings().let { json ->
-        return FeatureCollection.fromJson(json)
-            .also { buildings = it }
+    suspend fun getBuildings(): FeatureCollection {
+        buildings?.let { return it }
+
+        val geoBuildings = FeatureCollection.fromJson(arcGISService.getBuildings())
+        val popBuildings = FeatureCollection.fromJson(arcGISService.getPopularDestinations())
+
+        popBuildings.features()?.forEach { popBuilding ->
+            // For each "popular destination" building, find the corresponding building
+            // that contains the geometry and other properties
+            geoBuildings.features()?.firstOrNull { geoBuilding ->
+                geoBuilding.getNumberProperty(BUILDING_NUMBER).toInt() ==
+                        popBuilding.getNumberProperty(BUILDING_NUMBER_POP).toInt()
+            }?.run {
+                // Add the properties from the "popular destination" to the corresponding building
+                addStringProperty(CAMPUS, popBuilding.getStringProperty(CAMPUS))
+                addStringProperty(
+                    POPULAR_DESTINATION, popBuilding.getStringProperty(POPULAR_DESTINATION)
+                )
+            }
+        }
+
+        return geoBuildings.also { buildings = it }
     }
 
     suspend fun getBuildingArcGISDetails(buildingNumber: Int): BuildingArcGISDetails? {

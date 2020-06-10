@@ -12,6 +12,9 @@ interface ArcGISService {
     @GET(buildingsPath)
     suspend fun getBuildings(): String
 
+    @GET(popularDestinationsPath)
+    suspend fun getPopularDestinations(): String
+
     @GET(buildingArcGISDetailsPath)
     suspend fun getBuildingsArcGISDetails(): String
 }
