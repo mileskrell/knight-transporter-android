@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Toast
 import androidx.core.animation.addListener
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commitNow
@@ -66,6 +67,8 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         const val PARKING_LOTS_LAYER = "rParkingLots-layer"
         const val BUILDINGS_SOURCE = "rBuildings-source"
         const val BUILDINGS_LAYER = "rBuildings-layer"
+        const val POPULAR_DESTINATIONS_SOURCE = "rPopular-destinations-source"
+        const val POPULAR_DESTINATIONS_LAYER = "rPopular-destinations-layer"
         const val STOPS_SOURCE = "rStops-source"
         const val STOPS_LAYER = "rStops-layer"
         const val VEHICLES_SOURCE = "rVehicles-source"
@@ -88,6 +91,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
 
     private var parkingLayer: FillLayer? = null
     private var buildingLayer: FillLayer? = null
+    private var popularDestinationsLayer: SymbolLayer? = null
 
     private var speedDialWasClosedBecauseSearchViewWasOpened = false
 
@@ -659,6 +663,39 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                     val parkingLots = mapViewModel.getParkingLots()
                     val buildings = mapViewModel.getBuildings()
 
+                    // TODO: This work should be moved to Repository
+                    val popularDestinations = buildings.features()?.filter {
+                        it.properties()?.has(POPULAR_DESTINATION) == true
+                    }?.map { building ->
+                        Feature.fromGeometry(
+                            Point.fromLngLat(
+                                building.getNumberProperty(LONGITUDE).toDouble(),
+                                building.getNumberProperty(LATITUDE).toDouble()
+                            ),
+                            building.properties()
+                        )
+                    }?.let {
+                        FeatureCollection.fromFeatures(it)
+                    }
+
+                    style.addSource(GeoJsonSource(POPULAR_DESTINATIONS_SOURCE, popularDestinations))
+
+                    // TODO: Prioritize e.g. "New Brunswick" label over these labels
+                    // TODO: Only show these labels when zoomed in at least some amount
+                    popularDestinationsLayer =
+                        SymbolLayer(POPULAR_DESTINATIONS_LAYER, POPULAR_DESTINATIONS_SOURCE)
+                            .withProperties(
+                                PropertyFactory.textField(get(POPULAR_DESTINATION)),
+                                PropertyFactory.textSize(12f),
+                                PropertyFactory.textColor(
+                                    ContextCompat.getColor(requireContext(), R.color.colorPrimary)
+                                ),
+                                PropertyFactory.textHaloColor(Color.WHITE),
+                                PropertyFactory.textHaloWidth(2f)
+                            ).also {
+                                style.addLayer(it) // TODO: Add this layer under buses/stops
+                            }
+
                     // Set up search suggestions
 
                     mapViewModel.buildingItems = buildings.features()
@@ -801,7 +838,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
             findNavController().navigate(R.id.action_map_fragment_to_settings_fragment)
             true
         }
-        R.id.menu_item_toggle -> {
+        R.id.menu_item_toggle_buildings_lots -> {
             if (buildingLayer?.visibility?.value == Property.VISIBLE) {
                 buildingLayer?.setProperties(visibility(Property.NONE))
                 parkingLayer?.setProperties(visibility(Property.NONE))
@@ -810,6 +847,16 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                 buildingLayer?.setProperties(visibility(Property.VISIBLE))
                 parkingLayer?.setProperties(visibility(Property.VISIBLE))
                 item.setTitle(R.string.hide_buildings_lots)
+            }
+            true
+        }
+        R.id.menu_item_toggle_popular_destinations -> {
+            if (popularDestinationsLayer?.visibility?.value == Property.VISIBLE) {
+                popularDestinationsLayer?.setProperties(visibility(Property.NONE))
+                item.setTitle(R.string.show_popular_destination_labels)
+            } else {
+                popularDestinationsLayer?.setProperties(visibility(Property.VISIBLE))
+                item.setTitle(R.string.hide_popular_destination_labels)
             }
             true
         }

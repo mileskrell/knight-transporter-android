@@ -37,6 +37,9 @@ const val BUILDING_NAME = "BldgName"
 const val BUILDING_ADDRESS = "BldgAddr"
 const val CITY = "City"
 const val STATE = "State"
+const val BUILDING_NUMBER_POP = "Building_Number" // not returned by Repository
+const val CAMPUS = "Campus" // added from popular destinations
+const val POPULAR_DESTINATION = "popular_destination" // added from popular destinations
 
 // Parking lots
 const val PARKING_ID = "Parking_ID"
