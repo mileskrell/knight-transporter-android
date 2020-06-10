@@ -32,11 +32,10 @@ import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
-import com.mapbox.mapboxsdk.style.expressions.Expression.get
+import com.mapbox.mapboxsdk.style.expressions.Expression
 import com.mapbox.mapboxsdk.style.layers.FillLayer
 import com.mapbox.mapboxsdk.style.layers.Property
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.mapboxsdk.utils.BitmapUtils
@@ -197,7 +196,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                     SymbolLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).withProperties(
                         PropertyFactory.iconColor(0xFFFF00FF.toInt()),
                         PropertyFactory.iconImage(RUTGERS_BUS_ICON),
-                        PropertyFactory.iconRotate(get(HEADING)),
+                        PropertyFactory.iconRotate(Expression.get(HEADING)),
                         PropertyFactory.iconSize(1.5f),
                         PropertyFactory.iconAllowOverlap(true)
                     ).run {
@@ -517,7 +516,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                         )
                         SymbolLayer(VEHICLES_LAYER, VEHICLES_SOURCE).withProperties(
                             PropertyFactory.iconImage(RUTGERS_BUS_ICON),
-                            PropertyFactory.iconRotate(get(HEADING)),
+                            PropertyFactory.iconRotate(Expression.get(HEADING)),
                             PropertyFactory.iconSize(1.5f),
                             PropertyFactory.iconAllowOverlap(true)
                         ).run {
@@ -685,7 +684,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                     popularDestinationsLayer =
                         SymbolLayer(POPULAR_DESTINATIONS_LAYER, POPULAR_DESTINATIONS_SOURCE)
                             .withProperties(
-                                PropertyFactory.textField(get(POPULAR_DESTINATION)),
+                                PropertyFactory.textField(Expression.get(POPULAR_DESTINATION)),
                                 PropertyFactory.textSize(12f),
                                 PropertyFactory.textColor(
                                     ContextCompat.getColor(requireContext(), R.color.colorPrimary)
@@ -840,22 +839,22 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         }
         R.id.menu_item_toggle_buildings_lots -> {
             if (buildingLayer?.visibility?.value == Property.VISIBLE) {
-                buildingLayer?.setProperties(visibility(Property.NONE))
-                parkingLayer?.setProperties(visibility(Property.NONE))
+                buildingLayer?.setProperties(PropertyFactory.visibility(Property.NONE))
+                parkingLayer?.setProperties(PropertyFactory.visibility(Property.NONE))
                 item.setTitle(R.string.show_buildings_lots)
             } else {
-                buildingLayer?.setProperties(visibility(Property.VISIBLE))
-                parkingLayer?.setProperties(visibility(Property.VISIBLE))
+                buildingLayer?.setProperties(PropertyFactory.visibility(Property.VISIBLE))
+                parkingLayer?.setProperties(PropertyFactory.visibility(Property.VISIBLE))
                 item.setTitle(R.string.hide_buildings_lots)
             }
             true
         }
         R.id.menu_item_toggle_popular_destinations -> {
             if (popularDestinationsLayer?.visibility?.value == Property.VISIBLE) {
-                popularDestinationsLayer?.setProperties(visibility(Property.NONE))
+                popularDestinationsLayer?.setProperties(PropertyFactory.visibility(Property.NONE))
                 item.setTitle(R.string.show_popular_destination_labels)
             } else {
-                popularDestinationsLayer?.setProperties(visibility(Property.VISIBLE))
+                popularDestinationsLayer?.setProperties(PropertyFactory.visibility(Property.VISIBLE))
                 item.setTitle(R.string.hide_popular_destination_labels)
             }
             true
