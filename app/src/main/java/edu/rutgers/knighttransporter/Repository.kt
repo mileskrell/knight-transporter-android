@@ -93,6 +93,9 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
         return geoBuildings.also { buildings = it }
     }
 
+    // TODO: Fetch this beforehand, because it *does* have information that's useful before
+    //  having selected a building: the building categories (which we're not fetching yet).
+    //  It's probably best to fetch this along with the other building data in getBuildings().
     suspend fun getBuildingArcGISDetails(buildingNumber: Int): BuildingArcGISDetails? {
         if (buildingArcGISDetailsList == null) {
             buildingArcGISDetailsList = Gson().fromJson(
