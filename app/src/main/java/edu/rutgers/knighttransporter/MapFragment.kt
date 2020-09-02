@@ -512,6 +512,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                             )
                         )
                         SymbolLayer(VEHICLES_LAYER, VEHICLES_SOURCE).withProperties(
+                            PropertyFactory.iconColor(Expression.get(COLOR)),
                             PropertyFactory.iconImage(RUTGERS_BUS_ICON),
                             PropertyFactory.iconRotate(Expression.get(HEADING)),
                             PropertyFactory.iconSize(1.5f),
