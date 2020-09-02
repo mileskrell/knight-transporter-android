@@ -43,7 +43,7 @@ class RoutesAdapter(private var stopMarkerData: StopMarkerData) :
             it.routeId == stopMarkerData.associatedRoutes[position].routeId
         }.map {
             SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).parse(it.arrivalAt)!!
-        }.sorted().map {
+        }.sorted().take(3).map {
             (it.time - Date().time) / 1000
         }.run {
             if (isEmpty()) {
