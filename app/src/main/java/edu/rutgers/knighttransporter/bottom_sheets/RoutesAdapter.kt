@@ -51,7 +51,7 @@ class RoutesAdapter(private var stopMarkerData: StopMarkerData) :
             } else joinToString("\n") { seconds ->
                 when {
                     seconds <= 0 -> "Now" // e.g. it said "5 seconds" in the data, but it's negative by the time we open it
-                    seconds < 60 -> "$seconds sec"
+                    seconds < 60 -> "<1 min"
                     else -> "${seconds / 60} min"
                     // TODO: Does TransLoc ever give us arrival times that are already in the past
                     //  at the time of sending? If so, we'd want to not show those at all.
