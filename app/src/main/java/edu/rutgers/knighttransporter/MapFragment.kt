@@ -775,7 +775,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                         style.addLayerBelow(this, mapViewModel.firstLabelLayerId)
                     }
                 buildingLayer = FillLayer(BUILDINGS_LAYER, BUILDINGS_SOURCE)
-                    .withProperties(PropertyFactory.fillColor(Color.BLACK)).apply {
+                    .withProperties(PropertyFactory.fillColor(0xFF6D757C.toInt())).apply {
                         style.addLayerBelow(this, mapViewModel.firstLabelLayerId)
                     }
 
