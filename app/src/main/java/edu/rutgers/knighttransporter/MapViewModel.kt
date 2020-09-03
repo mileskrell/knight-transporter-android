@@ -1,20 +1,26 @@
 package edu.rutgers.knighttransporter
 
 import android.animation.AnimatorSet
+import android.app.Application
+import android.content.SharedPreferences
 import android.os.Bundle
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.preference.PreferenceManager
 import com.mapbox.geojson.Feature
 import com.mapbox.mapboxsdk.geometry.LatLng
 import edu.rutgers.knighttransporter.feature_stuff.PlaceType
 import edu.rutgers.knighttransporter.for_transloc.Route
 import edu.rutgers.knighttransporter.for_transloc.StopMarkerData
 
-class MapViewModel : ViewModel() {
+class MapViewModel(app: Application) : AndroidViewModel(app) {
     private val _routes = MutableLiveData<List<Route>>(emptyList())
     val routes: LiveData<List<Route>>
         get() = _routes
+
+    private val sharedPreferences: SharedPreferences =
+        PreferenceManager.getDefaultSharedPreferences(app.applicationContext)
 
     // From stop ID to StopMarkerData
     // TODO: Once data is over some age, display some kind of warning
@@ -45,11 +51,11 @@ class MapViewModel : ViewModel() {
 
     val mapInstanceState = Bundle()
 
-    suspend fun getWalkways() = repository.getWalkways()
+    suspend fun getWalkways() = repository.getWalkways(sharedPreferences)
 
-    suspend fun getParkingLots() = repository.getParkingLots()
+    suspend fun getParkingLots() = repository.getParkingLots(sharedPreferences)
 
-    suspend fun getBuildings() = repository.getBuildings()
+    suspend fun getBuildings() = repository.getBuildings(sharedPreferences)
 
     suspend fun getBuildingArcGISDetails(buildingNumber: Int) =
         repository.getBuildingArcGISDetails(buildingNumber)

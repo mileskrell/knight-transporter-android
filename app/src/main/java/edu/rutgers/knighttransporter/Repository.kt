@@ -1,5 +1,6 @@
 package edu.rutgers.knighttransporter
 
+import android.content.SharedPreferences
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -62,21 +63,45 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
         .build()
         .create(RutgersCloudStorageService::class.java)
 
-    suspend fun getWalkways() = walkways ?: arcGISService.getWalkways().let { json ->
-        return FeatureCollection.fromJson(json)
+    suspend fun getWalkways(sharedPrefs: SharedPreferences): FeatureCollection {
+        walkways?.let { return it }
+
+        val walkwaysJson = sharedPrefs.getString(WALKWAYS_KEY, null)
+            ?: arcGISService.getWalkways().also {
+                sharedPrefs.edit().putString(WALKWAYS_KEY, it).apply()
+            }
+
+        return FeatureCollection.fromJson(walkwaysJson)
             .also { walkways = it }
     }
 
-    suspend fun getParkingLots() = parkingLots ?: arcGISService.getParkingLots().let { json ->
-        return FeatureCollection.fromJson(json)
-            .also { parkingLots = it }
+    suspend fun getParkingLots(sharedPrefs: SharedPreferences): FeatureCollection {
+        parkingLots?.let { return it }
+
+        val parkingLotsJson = sharedPrefs.getString(PARKING_LOTS_KEY, null)
+            ?: arcGISService.getParkingLots().also {
+                sharedPrefs.edit().putString(PARKING_LOTS_KEY, it).apply()
+            }
+
+        return FeatureCollection.fromJson(parkingLotsJson)
+            .also { walkways = it }
     }
 
-    suspend fun getBuildings(): FeatureCollection {
+    suspend fun getBuildings(sharedPrefs: SharedPreferences): FeatureCollection {
         buildings?.let { return it }
 
-        val geoBuildings = FeatureCollection.fromJson(arcGISService.getBuildings())
-        val popBuildings = FeatureCollection.fromJson(arcGISService.getPopularDestinations())
+        val geoBuildingsJson = sharedPrefs.getString(GEO_BUILDINGS_KEY, null)
+            ?: arcGISService.getBuildings().also {
+                sharedPrefs.edit().putString(GEO_BUILDINGS_KEY, it).apply()
+            }
+
+        val popBuildingsJson = sharedPrefs.getString(POP_BUILDINGS_KEY, null)
+            ?: arcGISService.getPopularDestinations().also {
+                sharedPrefs.edit().putString(POP_BUILDINGS_KEY, it).apply()
+            }
+
+        val geoBuildings = FeatureCollection.fromJson(geoBuildingsJson)
+        val popBuildings = FeatureCollection.fromJson(popBuildingsJson)
 
         popBuildings.features()?.forEach { popBuilding ->
             // For each "popular destination" building, find the corresponding building
