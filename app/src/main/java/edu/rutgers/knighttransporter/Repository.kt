@@ -33,8 +33,11 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
             Log.d(TAG, "Connecting")
         }.on(Socket.EVENT_CONNECT_TIMEOUT) {
             Log.d(TAG, "Connect timeout")
-        }.on(Socket.EVENT_CONNECT_ERROR) {
-            Log.d(TAG, "Connect error")
+        }.on(Socket.EVENT_CONNECT_ERROR) { args ->
+            Log.d(TAG, "Connect error (with the following ${args.size} args)")
+            args.forEach {
+                Log.d(TAG, it?.toString() ?: "(null)")
+            }
         }.on("data") {
             Log.d(TAG, "Received data")
             val routes = Gson().fromJson<List<Route>>(
