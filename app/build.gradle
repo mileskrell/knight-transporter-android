@@ -55,16 +55,12 @@ dependencies {
     kapt "com.github.bumptech.glide:compiler:$glide_version"
 
     implementation "com.google.android.material:material:1.2.1"
-
     implementation "com.google.code.gson:gson:2.8.6"
-
     implementation "com.leinardi.android:speed-dial:3.1.1"
-
     implementation "com.mapbox.mapboxsdk:mapbox-android-sdk:9.2.1"
-
     implementation "com.miguelcatalan:materialsearchview:1.4.0"
 
-    def retrofit_version = '2.9.0'
+    def retrofit_version = "2.9.0"
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-scalars:$retrofit_version"
