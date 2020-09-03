@@ -55,3 +55,9 @@ const val ROUTE_NAME = "route name"
 const val VEHICLE_ID = "vehicle ID"
 const val HEADING = "heading"
 const val COLOR = "color"
+
+// Keys for storing GeoJSON in SharedPreferences
+const val WALKWAYS_KEY = "walkways"
+const val PARKING_LOTS_KEY = "parking_lots"
+const val GEO_BUILDINGS_KEY = "geo_buildings"
+const val POP_BUILDINGS_KEY = "pop_buildings"
