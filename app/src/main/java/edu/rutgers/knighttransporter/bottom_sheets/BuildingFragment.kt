@@ -175,6 +175,8 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
                 val departmentsList =
                     cloudStorageDetails.departments.joinToString(prefix = "- ", separator = "\n- ")
                 place_sheet_building_departments.run {
+                    // TODO: Occasional crash - fragment not attached to a context, and then the
+                    //  call to setMarkdown makes it crash
                     markwon.setMarkdown(this, "### Departments\n$departmentsList")
                     visibility = View.VISIBLE
                 }
