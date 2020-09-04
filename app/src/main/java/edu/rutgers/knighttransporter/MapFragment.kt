@@ -9,6 +9,7 @@ import android.view.*
 import android.widget.Toast
 import androidx.core.animation.addListener
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commitNow
@@ -330,7 +331,11 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                 style.addImage(
                     RUTGERS_BUS_ICON,
                     BitmapUtils.getBitmapFromDrawable(
-                        resources.getDrawable(R.drawable.ic_navigation_black_24dp, null)
+                        ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.ic_navigation_black_24dp,
+                            null
+                        )!!
                     )!!,
                     true // This lets us change its color
                 )
@@ -339,7 +344,11 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                 style.addImage(
                     RUTGERS_STOP_ICON,
                     BitmapUtils.getBitmapFromDrawable(
-                        resources.getDrawable(R.drawable.ic_bus_stop, null).apply {
+                        ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.ic_bus_stop,
+                            null
+                        )!!.apply {
                             (this as GradientDrawable).setSize(stopIconSize, stopIconSize)
                         }
                     )!!,
@@ -348,7 +357,11 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                 style.addImage(
                     RUTGERS_STOP_ICON_SELECTED,
                     BitmapUtils.getBitmapFromDrawable(
-                        resources.getDrawable(R.drawable.ic_bus_stop_selected, null).apply {
+                        ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.ic_bus_stop_selected,
+                            null
+                        )!!.apply {
                             (this as GradientDrawable).setSize(stopIconSize, stopIconSize)
                         }
                     )!!,
@@ -462,7 +475,11 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                         }
                         mapViewModel.stopItems = busStopFeatures.map {
                             RutgersPlacesSearchAdapter.AdapterPlaceItem(
-                                resources.getDrawable(R.drawable.ic_bus_stop, null),
+                                ResourcesCompat.getDrawable(
+                                    resources,
+                                    R.drawable.ic_bus_stop,
+                                    null
+                                )!!,
                                 PlaceType.STOP,
                                 it
                             )
@@ -612,7 +629,11 @@ class MapFragment : Fragment(R.layout.fragment_map) {
 
                     mapViewModel.vehicleItems = newVehicleFeatures.map {
                         RutgersPlacesSearchAdapter.AdapterPlaceItem(
-                            resources.getDrawable(R.drawable.ic_navigation_black_24dp, null),
+                            ResourcesCompat.getDrawable(
+                                resources,
+                                R.drawable.ic_navigation_black_24dp,
+                                null
+                            )!!,
                             PlaceType.VEHICLE,
                             it
                         )
@@ -718,7 +739,11 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                     mapViewModel.buildingItems = buildings.features()
                         ?.map {
                             RutgersPlacesSearchAdapter.AdapterPlaceItem(
-                                resources.getDrawable(R.drawable.building, null),
+                                ResourcesCompat.getDrawable(
+                                    resources,
+                                    R.drawable.building,
+                                    null
+                                )!!,
                                 PlaceType.BUILDING,
                                 it
                             )
@@ -727,7 +752,11 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                     mapViewModel.parkingLotItems = parkingLots.features()
                         ?.map {
                             RutgersPlacesSearchAdapter.AdapterPlaceItem(
-                                resources.getDrawable(R.drawable.ic_local_parking_black_24dp, null),
+                                ResourcesCompat.getDrawable(
+                                    resources,
+                                    R.drawable.ic_local_parking_black_24dp,
+                                    null
+                                )!!,
                                 PlaceType.PARKING_LOT,
                                 it
                             )
