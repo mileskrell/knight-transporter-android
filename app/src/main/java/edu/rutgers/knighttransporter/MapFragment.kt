@@ -796,16 +796,16 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                 style.addSource(GeoJsonSource(PARKING_LOTS_SOURCE, URI(parkingLotsUrl)))
 
                 FillLayer(WALKWAYS_LAYER, WALKWAYS_SOURCE)
-                    .withProperties(PropertyFactory.fillColor(0x88964b00.toInt())).run {
-                        style.addLayerBelow(this, mapViewModel.firstLabelLayerId)
+                    .withProperties(PropertyFactory.fillColor(0x88964b00.toInt())).let {
+                        style.addLayerBelow(it, mapViewModel.firstLabelLayerId)
                     }
                 parkingLayer = FillLayer(PARKING_LOTS_LAYER, PARKING_LOTS_SOURCE)
-                    .withProperties(PropertyFactory.fillColor(0x88888888.toInt())).apply {
-                        style.addLayerBelow(this, mapViewModel.firstLabelLayerId)
+                    .withProperties(PropertyFactory.fillColor(0x88888888.toInt())).also {
+                        style.addLayerBelow(it, mapViewModel.firstLabelLayerId)
                     }
                 buildingLayer = FillLayer(BUILDINGS_LAYER, BUILDINGS_SOURCE)
-                    .withProperties(PropertyFactory.fillColor(0xFF6D757C.toInt())).apply {
-                        style.addLayerBelow(this, mapViewModel.firstLabelLayerId)
+                    .withProperties(PropertyFactory.fillColor(0xFF6D757C.toInt())).also {
+                        style.addLayerBelow(it, mapViewModel.firstLabelLayerId)
                     }
 
                 // Remove Mapbox Streets building stuff
