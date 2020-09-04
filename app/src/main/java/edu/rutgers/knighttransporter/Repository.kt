@@ -23,6 +23,7 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
     }
 
     private var walkways: FeatureCollection? = null
+    private var routePolylines: FeatureCollection? = null
     private var parkingLots: FeatureCollection? = null
     private var buildings: FeatureCollection? = null
     private var buildingArcGISDetailsList: List<BuildingArcGISDetails>? = null
@@ -63,6 +64,12 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
         .build()
         .create(RutgersCloudStorageService::class.java)
 
+    private val routePolylineService = Retrofit.Builder()
+        .baseUrl(routesBaseUrl)
+        .addConverterFactory(ScalarsConverterFactory.create())
+        .build()
+        .create(RoutePolylineService::class.java)
+
     suspend fun getWalkways(sharedPrefs: SharedPreferences): FeatureCollection {
         walkways?.let { return it }
 
@@ -73,6 +80,18 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
 
         return FeatureCollection.fromJson(walkwaysJson)
             .also { walkways = it }
+    }
+
+    suspend fun getRoutePolylines(sharedPrefs: SharedPreferences): FeatureCollection {
+        routePolylines?.let { return it }
+
+        val routePolylinesJson = sharedPrefs.getString(ROUTE_POLYLINES_KEY, null)
+            ?: routePolylineService.getRoutePolylines().also {
+                sharedPrefs.edit().putString(ROUTE_POLYLINES_KEY, it).apply()
+            }
+
+        return FeatureCollection.fromJson(routePolylinesJson)
+            .also { routePolylines = it }
     }
 
     suspend fun getParkingLots(sharedPrefs: SharedPreferences): FeatureCollection {

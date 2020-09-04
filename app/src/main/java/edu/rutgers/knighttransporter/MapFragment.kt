@@ -60,6 +60,8 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         const val LNG_WEST = -75.56
         const val WALKWAYS_SOURCE = "rWalkways-source"
         const val WALKWAYS_LAYER = "rWalkways-layer"
+        const val ROUTES_SOURCE = "rRoutes-source"
+        const val ROUTES_LAYER = "rRoutes-layer"
         const val PARKING_LOTS_SOURCE = "rParkingLots-source"
         const val PARKING_LOTS_LAYER = "rParkingLots-layer"
         const val BUILDINGS_SOURCE = "rBuildings-source"
@@ -86,6 +88,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
     private lateinit var mapboxMap: MapboxMap
     private lateinit var style: Style
 
+    private var routesLayer: LineLayer? = null // TODO: Use this
     private var parkingLayer: FillLayer? = null
     private var buildingLayer: FillLayer? = null
     private var popularDestinationsLayer: SymbolLayer? = null
@@ -681,6 +684,11 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                     val parkingLots = mapViewModel.getParkingLots()
                     val buildings = mapViewModel.getBuildings()
 
+                    // TODO: Do something with this data
+                    val routePolylines = mapViewModel.getRoutePolylines()
+                    val routeNames = routePolylines.features()?.map { it.getStringProperty(NAME) }
+                        ?: emptyList()
+
                     // TODO: This work should be moved to Repository
                     val popularDestinations = buildings.features()?.filter {
                         it.properties()?.has(POPULAR_DESTINATION) == true
@@ -792,11 +800,22 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                 }
 
                 style.addSource(GeoJsonSource(WALKWAYS_SOURCE, URI(walkwaysUrl)))
+                style.addSource(GeoJsonSource(ROUTES_SOURCE, URI(routesUrl))) // TODO: Probably don't do this
                 style.addSource(GeoJsonSource(BUILDINGS_SOURCE, URI(buildingsUrl)))
                 style.addSource(GeoJsonSource(PARKING_LOTS_SOURCE, URI(parkingLotsUrl)))
 
                 FillLayer(WALKWAYS_LAYER, WALKWAYS_SOURCE)
                     .withProperties(PropertyFactory.fillColor(0x88964b00.toInt())).let {
+                        style.addLayerBelow(it, mapViewModel.firstLabelLayerId)
+                    }
+                // TODO: We should probably instead only fetch the route polylines ourselves so we
+                //  can change which are shown.
+                routesLayer = LineLayer(ROUTES_LAYER, ROUTES_SOURCE)
+                    .withProperties(
+                        PropertyFactory.lineColor(Expression.get(COLOR)),
+                        PropertyFactory.lineWidth(4f),
+                        PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
+                    ).also {
                         style.addLayerBelow(it, mapViewModel.firstLabelLayerId)
                     }
                 parkingLayer = FillLayer(PARKING_LOTS_LAYER, PARKING_LOTS_SOURCE)

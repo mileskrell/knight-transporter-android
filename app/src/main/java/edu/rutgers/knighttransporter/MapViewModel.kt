@@ -53,6 +53,8 @@ class MapViewModel(app: Application) : AndroidViewModel(app) {
 
     suspend fun getWalkways() = repository.getWalkways(sharedPreferences)
 
+    suspend fun getRoutePolylines() = repository.getRoutePolylines(sharedPreferences)
+
     suspend fun getParkingLots() = repository.getParkingLots(sharedPreferences)
 
     suspend fun getBuildings() = repository.getBuildings(sharedPreferences)
