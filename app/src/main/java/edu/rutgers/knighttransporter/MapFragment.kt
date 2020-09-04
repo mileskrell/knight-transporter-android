@@ -707,22 +707,20 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                     style.addSource(GeoJsonSource(POPULAR_DESTINATIONS_SOURCE, popularDestinations))
 
                     // TODO: Prioritize e.g. "New Brunswick" label over these labels
-                    // TODO: Only show these labels when zoomed in at least some amount
                     popularDestinationsLayer =
                         SymbolLayer(POPULAR_DESTINATIONS_LAYER, POPULAR_DESTINATIONS_SOURCE)
                             .withProperties(
-                                // Only show if zoom level is over 12.25
                                 PropertyFactory.textOpacity(
                                     Expression.interpolate(
                                         Expression.Interpolator.linear(),
                                         Expression.zoom(),
-                                        // Fade the labels in between zoom levels 12.25 and 12.75
+                                        // Fade the labels in between zoom levels 14.95 and 15.05
                                         Expression.stop(
-                                            Expression.literal(12.25f),
+                                            Expression.literal(14.95f),
                                             Expression.literal(0f)
                                         ),
                                         Expression.stop(
-                                            Expression.literal(12.75f),
+                                            Expression.literal(15.05f),
                                             Expression.literal(1f)
                                         )
                                     )
