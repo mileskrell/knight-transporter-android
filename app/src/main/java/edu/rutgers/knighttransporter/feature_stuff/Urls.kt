@@ -14,7 +14,7 @@ const val walkwaysPath = "Rutgers_University_Walkways/FeatureServer/0/query?$com
 const val buildingsPath = "Rutgers_University_Buildings/FeatureServer/0/query?$commonParams&outFields=$BUILDING_NAME%2C$BUILDING_NUMBER%2C$BUILDING_ADDRESS%2C$CITY%2C$STATE%2C$LATITUDE%2C$LONGITUDE"
 const val popularDestinationsPath = "popular_destinations/FeatureServer/0/query?$commonParams&where=1%3D1&outFields=$BUILDING_NUMBER_POP%2C$CAMPUS%2C$POPULAR_DESTINATION"
 const val parkingLotsPath = "Rutgers_University_Parking/FeatureServer/0/query?$commonParams&outFields=$PARKING_ID%2C$LOT_NAME%2C$CONTACT%2C$WEBSITE%2C$LATITUDE%2C$LONGITUDE"
-const val routesPath = "routes.geojson"
+const val routesPath = "new_routes.geojson"
 
 /*
 This one unfortunately doesn't contain geometry, only properties - including the website,
