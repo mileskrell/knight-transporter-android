@@ -188,9 +188,9 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                     SymbolLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).withProperties(
                         PropertyFactory.iconImage(RUTGERS_STOP_ICON_SELECTED),
                         PropertyFactory.iconAllowOverlap(true)
-                    ).run {
+                    ).let {
                         // We definitely have a stops layer
-                        style.addLayerAbove(this, STOPS_LAYER)
+                        style.addLayerAbove(it, STOPS_LAYER)
                     }
                 }
                 PlaceType.VEHICLE -> {
@@ -200,9 +200,9 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                         PropertyFactory.iconRotate(Expression.get(HEADING)),
                         PropertyFactory.iconSize(1.5f),
                         PropertyFactory.iconAllowOverlap(true)
-                    ).run {
+                    ).let {
                         // We definitely have a vehicles layer
-                        style.addLayerAbove(this, VEHICLES_LAYER)
+                        style.addLayerAbove(it, VEHICLES_LAYER)
                     }
                 }
                 else -> {
@@ -211,10 +211,10 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                             (if (placeType == PlaceType.PARKING_LOT) 0x88FF00FF else 0xFFFF00FF)
                                 .toInt()
                         )
-                    ).run {
+                    ).let {
                         // Add layer as high as possible
                         style.addLayerAbove(
-                            this, when {
+                            it, when {
                                 style.getLayer(VEHICLES_LAYER) != null -> VEHICLES_LAYER
                                 style.getLayer(STOPS_LAYER) != null -> STOPS_LAYER
                                 style.getLayer(BUILDINGS_LAYER) != null -> BUILDINGS_LAYER
