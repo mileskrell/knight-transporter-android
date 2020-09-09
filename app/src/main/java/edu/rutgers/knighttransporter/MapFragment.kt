@@ -205,7 +205,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                         style.addLayerAbove(it, VEHICLES_LAYER)
                     }
                 }
-                else -> {
+                PlaceType.WALKWAY, PlaceType.PARKING_LOT, PlaceType.BUILDING -> {
                     FillLayer(SELECTED_PLACE_LAYER, SELECTED_PLACE_SOURCE).withProperties(
                         PropertyFactory.fillColor(
                             (if (placeType == PlaceType.PARKING_LOT) 0x88FF00FF else 0xFFFF00FF)
@@ -301,7 +301,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                             PlaceType.STOP -> STOPS_LAYER
                             PlaceType.BUILDING -> BUILDINGS_LAYER
                             PlaceType.PARKING_LOT -> PARKING_LOTS_LAYER
-                            else -> throw RuntimeException("tappedPoint isn't null and selectedPlaceType is ${mapViewModel.selectedPlaceType?.name}")
+                            PlaceType.WALKWAY, null -> throw RuntimeException("tappedPoint isn't null and selectedPlaceType is ${mapViewModel.selectedPlaceType?.name}")
                         }
 
                         val tappedThings =
