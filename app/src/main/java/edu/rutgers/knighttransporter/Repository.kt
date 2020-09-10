@@ -28,27 +28,56 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
     private var buildings: FeatureCollection? = null
     private var buildingArcGISDetailsList: List<BuildingArcGISDetails>? = null
 
-    private val translocSocket = IO.socket(busServerUrl).connect().apply {
-        on(Socket.EVENT_CONNECT) {
-            Log.d(TAG, "Connected")
-        }.on(Socket.EVENT_CONNECTING) {
-            Log.d(TAG, "Connecting")
-        }.on(Socket.EVENT_CONNECT_TIMEOUT) {
-            Log.d(TAG, "Connect timeout")
+    private fun logEvent(eventName: String, args: Array<out Any?>?) {
+        var message = "Socket.IO: $eventName"
+        if (args?.size ?: 0 > 0) {
+            message += " with ${args!!.size} args:"
+        }
+
+        Log.d(TAG, message)
+        args?.forEachIndexed { index, value ->
+            Log.d(TAG, "           ${index + 1}. " + (value?.toString() ?: "(null)"))
+        }
+    }
+
+    private val translocSocket = IO.socket(busServerUrl, IO.Options().apply {
+        timeout = -1 // Maybe this makes it work more often? Probably not, though
+    }).connect().apply {
+        on(Socket.EVENT_CONNECT) { args ->
+            logEvent("Connect", args)
+        }.on(Socket.EVENT_CONNECTING) { args ->
+            logEvent("Connecting", args)
+        }.on(Socket.EVENT_DISCONNECT) { args ->
+            logEvent("Disconnected", args)
+        }.on(Socket.EVENT_ERROR) { args ->
+            logEvent("Error", args)
+        }.on(Socket.EVENT_MESSAGE) { args ->
+            logEvent("Message", args)
         }.on(Socket.EVENT_CONNECT_ERROR) { args ->
-            Log.d(TAG, "Connect error (with the following ${args.size} args)")
-            args.forEach {
-                Log.d(TAG, it?.toString() ?: "(null)")
-            }
+            logEvent("Connect error", args)
+        }.on(Socket.EVENT_CONNECT_TIMEOUT) { args ->
+            logEvent("Connect timeout", args)
+        }.on(Socket.EVENT_RECONNECT) { args ->
+            logEvent("Reconnect", args)
+        }.on(Socket.EVENT_RECONNECT_ERROR) { args ->
+            logEvent("Reconnect error", args)
+        }.on(Socket.EVENT_RECONNECT_FAILED) { args ->
+            logEvent("Reconnect failed", args)
+        }.on(Socket.EVENT_RECONNECT_ATTEMPT) { args ->
+            logEvent("Reconnect attempt", args)
+        }.on(Socket.EVENT_RECONNECTING) { args ->
+            logEvent("Reconnecting", args)
+        }.on(Socket.EVENT_PING) { args ->
+            logEvent("Ping", args)
+        }.on(Socket.EVENT_PONG) { args ->
+            logEvent("Pong", args)
         }.on("data") {
-            Log.d(TAG, "Received data")
+            Log.d(TAG, "Socket.IO: Received data")
             val routes = Gson().fromJson<List<Route>>(
                 (it[0] as JSONArray).toString(),
                 object : TypeToken<List<Route>>() {}.type
             )
             onRoutesUpdated(routes)
-        }.on(Socket.EVENT_DISCONNECT) {
-            Log.d(TAG, "Disconnected")
         }
     }
 
