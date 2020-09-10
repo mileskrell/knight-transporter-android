@@ -33,7 +33,6 @@ class ParkingLotFragment : Fragment(R.layout.fragment_place_sheet_parking_lot) {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         val markwon = createRutgersMarkwon(requireContext())
 
         place_sheet_parking_lot_name.text = feature.getStringProperty(LOT_NAME)

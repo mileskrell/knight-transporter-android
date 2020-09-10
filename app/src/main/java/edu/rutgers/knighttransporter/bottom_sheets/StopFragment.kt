@@ -47,7 +47,6 @@ class StopFragment : Fragment(R.layout.fragment_place_sheet_stop) {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         place_sheet_stop_name.text = initialStopMarkerData.stop.name
 
         val routesAdapter = RoutesAdapter(initialStopMarkerData)
