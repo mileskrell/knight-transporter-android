@@ -51,7 +51,6 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         val markwon = createRutgersMarkwon(requireContext())
 
         building.getStringProperty(BUILDING_NAME).let { buildingName ->

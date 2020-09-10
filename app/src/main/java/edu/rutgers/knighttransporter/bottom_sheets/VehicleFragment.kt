@@ -31,7 +31,6 @@ class VehicleFragment : Fragment(R.layout.fragment_place_sheet_vehicle) {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         place_sheet_vehicle_route_name.text = vehicleFeature.getStringProperty(ROUTE_NAME)
         place_sheet_vehicle_id.text =
             "Vehicle ID: ${vehicleFeature.getNumberProperty(VEHICLE_ID).toInt()}"
