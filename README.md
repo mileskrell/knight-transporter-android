@@ -1,5 +1,7 @@
 # Knight Transporter (Android version)
 
+## **development currently on hold**
+
 This is a Rutgers bus-tracking and map app.
 
 It aims to combine features that currently exist in two separate applications:
@@ -11,9 +13,6 @@ It aims to combine features that currently exist in two separate applications:
   - displaying Rutgers-affiliated buildings, parking lots, and walkways on a map
   - allowing the user to search for Rutgers-affiliated buildings and parking lots
   - displaying details for these buildings and parking lots (such as address, photo, list of associated departments, etc.)
-
-The app is under heavy development, with a focus on adding new features rather than fixing bugs that don't impact core functionality.
-As a result, there are some bugs that I'm aware of but choosing not to focus on for now (such as a lack of handling of configuration changes and network connectivity loss).
 
 ###### *Knight Transporter is being developed for Rutgers in an official capacity, but is unaffiliated with these other projects.
 
