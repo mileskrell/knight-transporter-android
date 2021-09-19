@@ -798,7 +798,12 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                 }
 
                 style.addSource(GeoJsonSource(WALKWAYS_SOURCE, URI(walkwaysUrl)))
-                style.addSource(GeoJsonSource(ROUTES_SOURCE, URI(routesUrl))) // TODO: Probably don't do this
+                style.addSource(
+                    GeoJsonSource(
+                        ROUTES_SOURCE,
+                        URI(routesUrl)
+                    )
+                ) // TODO: Probably don't do this
                 style.addSource(GeoJsonSource(BUILDINGS_SOURCE, URI(buildingsUrl)))
                 style.addSource(GeoJsonSource(PARKING_LOTS_SOURCE, URI(parkingLotsUrl)))
 

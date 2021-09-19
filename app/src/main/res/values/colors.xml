@@ -3,6 +3,6 @@
     <color name="colorPrimary">#cc0033</color> <!-- Pantone 186 -->
     <color name="colorPrimaryDark">#850021</color> <!-- Pantone 186, but darkened -->
     <color name="colorAccent">#007fac</color> <!-- Pantone 314 -->
-    
+
     <color name="pantone7501">#dfd2b3</color>
 </resources>

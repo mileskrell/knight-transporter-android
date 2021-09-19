@@ -5,7 +5,9 @@ import android.graphics.Paint.FontMetricsInt
 import android.text.Spanned
 import android.text.style.LineHeightSpan
 import android.util.DisplayMetrics
-import io.noties.markwon.*
+import io.noties.markwon.AbstractMarkwonPlugin
+import io.noties.markwon.Markwon
+import io.noties.markwon.MarkwonVisitor
 import io.noties.markwon.linkify.LinkifyPlugin
 import org.commonmark.node.SoftLineBreak
 import kotlin.math.roundToInt

@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import com.mapbox.geojson.Feature
-import edu.rutgers.knighttransporter.createRutgersMarkwon
 import edu.rutgers.knighttransporter.R
+import edu.rutgers.knighttransporter.createRutgersMarkwon
 import edu.rutgers.knighttransporter.feature_stuff.CONTACT
 import edu.rutgers.knighttransporter.feature_stuff.LOT_NAME
 import edu.rutgers.knighttransporter.feature_stuff.WEBSITE
