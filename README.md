@@ -1,7 +1,5 @@
 # Knight Transporter (Android version)
 
-## **development currently on hold**
-
 This is a Rutgers bus-tracking and map app.
 
 It aims to combine features that currently exist in two separate applications:
