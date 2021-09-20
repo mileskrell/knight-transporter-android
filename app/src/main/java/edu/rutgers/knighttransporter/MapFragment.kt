@@ -30,7 +30,6 @@ import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
-import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.expressions.Expression
@@ -87,7 +86,6 @@ class MapFragment : Fragment() {
 
     private val mapViewModel: MapViewModel by activityViewModels()
 
-    private lateinit var mapView: MapView
     private lateinit var mapboxMap: MapboxMap
     private lateinit var style: Style
 
@@ -894,19 +892,15 @@ class MapFragment : Fragment() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        // We're doing this because we drop our binding reference before onDestroy()
-        mapView = binding.mapView
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         // If we don't save this, the map will be reset if we leave and come back.
         // Since onSaveInstanceState() doesn't get called when we go to a different page,
         // we need to save it here instead.
         mapViewModel.mapInstanceState.clear()
-        mapView.onSaveInstanceState(mapViewModel.mapInstanceState)
+        binding.mapView.onSaveInstanceState(mapViewModel.mapInstanceState)
+        // FIXME: Mapbox says we need to call MapView#onDestroy() here, but that
+        //  causes the app to crash due to something it appears we're doing wrong.
         _binding = null
     }
 
@@ -969,22 +963,14 @@ class MapFragment : Fragment() {
         binding.mapView.onStart()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        // FIXME: Mapbox says this should be called from Fragment#onDestroyView() instead, but that
-        //  causes the app to crash due to something else it appears we're doing wrong.
-        //  If we fix this, it removes the need to keep an extra field for it.
-        mapView.onDestroy()
-    }
-
     override fun onLowMemory() {
         super.onLowMemory()
-        mapView.onLowMemory()
+        binding.mapView.onLowMemory()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         // Idk if this is necessary, since I'm already saving the state in onDestroyView()
-        mapView.onSaveInstanceState(outState)
+        binding.mapView.onSaveInstanceState(outState)
     }
 }
