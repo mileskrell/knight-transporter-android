@@ -3,12 +3,10 @@ package edu.rutgers.knighttransporter.bottom_sheets
 import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import edu.rutgers.knighttransporter.R
+import edu.rutgers.knighttransporter.databinding.RouteItemBinding
 import edu.rutgers.knighttransporter.for_transloc.StopMarkerData
-import kotlinx.android.synthetic.main.route_item.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -26,18 +24,18 @@ class RoutesAdapter(private var stopMarkerData: StopMarkerData) :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = RouteViewHolder(
-        LayoutInflater.from(parent.context).inflate(R.layout.route_item, parent, false)
+        RouteItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
     )
 
     override fun getItemCount() = stopMarkerData.associatedRoutes.size
 
     override fun onBindViewHolder(holder: RouteViewHolder, position: Int) {
-        holder.itemView.route_item_route_name.run {
+        holder.binding.routeItemRouteName.run {
             text = stopMarkerData.associatedRoutes[position].longName
             setTextColor(Color.parseColor("#${stopMarkerData.associatedRoutes[position].color}"))
         }
 
-        holder.itemView.route_item_predictions.text = stopMarkerData.arrivalEstimates.filter {
+        holder.binding.routeItemPredictions.text = stopMarkerData.arrivalEstimates.filter {
             it.routeId == stopMarkerData.associatedRoutes[position].routeId
         }.map {
             SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).parse(it.arrivalAt)!!
@@ -58,5 +56,5 @@ class RoutesAdapter(private var stopMarkerData: StopMarkerData) :
         }
     }
 
-    class RouteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    class RouteViewHolder(val binding: RouteItemBinding) : RecyclerView.ViewHolder(binding.root)
 }

@@ -1,15 +1,16 @@
 package edu.rutgers.knighttransporter.bottom_sheets
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.mapbox.geojson.Feature
-import edu.rutgers.knighttransporter.R
+import edu.rutgers.knighttransporter.databinding.FragmentPlaceSheetVehicleBinding
 import edu.rutgers.knighttransporter.feature_stuff.ROUTE_NAME
 import edu.rutgers.knighttransporter.feature_stuff.VEHICLE_ID
-import kotlinx.android.synthetic.main.fragment_place_sheet_vehicle.*
 
-class VehicleFragment : Fragment(R.layout.fragment_place_sheet_vehicle) {
+class VehicleFragment : Fragment() {
     companion object {
         @JvmStatic
         fun newInstance(feature: String) =
@@ -30,9 +31,17 @@ class VehicleFragment : Fragment(R.layout.fragment_place_sheet_vehicle) {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        place_sheet_vehicle_route_name.text = vehicleFeature.getStringProperty(ROUTE_NAME)
-        place_sheet_vehicle_id.text =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val binding = FragmentPlaceSheetVehicleBinding.inflate(inflater, container, false)
+
+        binding.placeSheetVehicleRouteName.text = vehicleFeature.getStringProperty(ROUTE_NAME)
+        binding.placeSheetVehicleId.text =
             "Vehicle ID: ${vehicleFeature.getNumberProperty(VEHICLE_ID).toInt()}"
+
+        return binding.root
     }
 }

@@ -42,15 +42,17 @@ import edu.rutgers.knighttransporter.bottom_sheets.BuildingFragment
 import edu.rutgers.knighttransporter.bottom_sheets.ParkingLotFragment
 import edu.rutgers.knighttransporter.bottom_sheets.StopFragment
 import edu.rutgers.knighttransporter.bottom_sheets.VehicleFragment
+import edu.rutgers.knighttransporter.databinding.FragmentMapBinding
 import edu.rutgers.knighttransporter.feature_stuff.*
 import edu.rutgers.knighttransporter.for_transloc.StopMarkerData
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_map.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import java.net.URI
 
-class MapFragment : Fragment(R.layout.fragment_map) {
+class MapFragment : Fragment() {
+
+    private var _binding: FragmentMapBinding? = null
+    private val binding get() = _binding!!
 
     companion object {
         const val MIN_ZOOM = 7.0
@@ -80,7 +82,8 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         const val BOTTOM_SHEET_FRAGMENT = "bottom sheet fragment"
     }
 
-    private lateinit var searchView: MaterialSearchView
+    private val searchView: MaterialSearchView
+        get() = (requireActivity() as MainActivity).binding.searchView
 
     private val mapViewModel: MapViewModel by activityViewModels()
 
@@ -146,7 +149,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                 cameraMode = CameraMode.TRACKING
                 renderMode = RenderMode.COMPASS
             }
-            fab_my_location.setOnClickListener {
+            binding.fabMyLocation.setOnClickListener {
                 if (!::mapboxMap.isInitialized) return@setOnClickListener
                 val last = mapboxMap.locationComponent.lastKnownLocation
                 if (last != null) {
@@ -157,7 +160,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                 }
             }
             // We would call show(), but we want this to be instant. Cast to suppress warning.
-            (fab_my_location as View).visibility = View.VISIBLE
+            (binding.fabMyLocation as View).visibility = View.VISIBLE
         } else {
             // TODO: Communicate between fragment and activity in a cleaner way?
             (activity as MainActivity).permissionsManager = permissionsManager
@@ -240,7 +243,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                         BOTTOM_SHEET_FRAGMENT
                     )
                 }
-                BottomSheetBehavior.from(map_bottom_sheet).state =
+                BottomSheetBehavior.from(binding.mapBottomSheet).state =
                     BottomSheetBehavior.STATE_HALF_EXPANDED
             }
         }
@@ -257,7 +260,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
             mapViewModel.tappedLatLng = null
             val removedLayer = style.removeLayer(SELECTED_PLACE_LAYER)
             style.removeSource(SELECTED_PLACE_SOURCE)
-            BottomSheetBehavior.from(map_bottom_sheet).state = BottomSheetBehavior.STATE_HIDDEN
+            BottomSheetBehavior.from(binding.mapBottomSheet).state = BottomSheetBehavior.STATE_HIDDEN
             childFragmentManager.findFragmentByTag(BOTTOM_SHEET_FRAGMENT)?.let {
                 childFragmentManager.commitNow { remove(it) }
             }
@@ -265,22 +268,24 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         } else false
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentMapBinding.inflate(inflater, container, false)
+
         setHasOptionsMenu(true)
-        searchView = (requireActivity() as MainActivity).search_view
-        BottomSheetBehavior.from(map_bottom_sheet).state = BottomSheetBehavior.STATE_HIDDEN
+        BottomSheetBehavior.from(binding.mapBottomSheet).state = BottomSheetBehavior.STATE_HIDDEN
         // Don't let gestures pass through bottom sheet to MapView
-        map_bottom_sheet.setOnTouchListener { _, _ -> true }
+        binding.mapBottomSheet.setOnTouchListener { _, _ -> true }
 
-        // We're doing this because we can't use synthetic properties in (at least) onDestroy()
-        mapView = view.findViewById(R.id.map_view)
-
-        map_view.onCreate(mapViewModel.mapInstanceState)
-        map_view.getMapAsync { mapboxMap ->
+        binding.mapView.onCreate(mapViewModel.mapInstanceState)
+        binding.mapView.getMapAsync { mapboxMap ->
             this.mapboxMap = mapboxMap
             mapboxMap.addOnMoveListener(object : MapboxMap.OnMoveListener {
                 override fun onMoveBegin(detector: MoveGestureDetector) {
-                    routes_speed_dial.close()
+                    binding.routesSpeedDial.close()
                 }
 
                 override fun onMove(detector: MoveGestureDetector) {}
@@ -371,7 +376,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                     false // Use colors from drawable
                 )
                 mapboxMap.addOnMapClickListener { latLng ->
-                    routes_speed_dial.close()
+                    binding.routesSpeedDial.close()
                     searchView.closeSearch()
                     val point = mapboxMap.projection.toScreenLocation(latLng)
 
@@ -848,8 +853,8 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                 style.removeLayer("transit-label")
             }
         }
-        routes_speed_dial.inflate(R.menu.routes_speed_dial_menu)
-        routes_speed_dial.setOnChangeListener(object : SpeedDialView.OnChangeListener {
+        binding.routesSpeedDial.inflate(R.menu.routes_speed_dial_menu)
+        binding.routesSpeedDial.setOnChangeListener(object : SpeedDialView.OnChangeListener {
             override fun onMainActionSelected() = false
 
             override fun onToggleChanged(isOpen: Boolean) {
@@ -863,7 +868,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
                 speedDialWasClosedBecauseSearchViewWasOpened = false
             }
         })
-        routes_speed_dial.setOnActionSelectedListener {
+        binding.routesSpeedDial.setOnActionSelectedListener {
             Toast.makeText(context, "You tapped a route", Toast.LENGTH_SHORT).show()
             false
         }
@@ -873,7 +878,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
 
             override fun onSearchViewShown() {
                 speedDialWasClosedBecauseSearchViewWasOpened = true
-                routes_speed_dial.close()
+                binding.routesSpeedDial.close()
             }
         })
 
@@ -885,6 +890,14 @@ class MapFragment : Fragment(R.layout.fragment_map) {
             // It doesn't seem like the value for this one matters
             override fun onQueryTextChange(newText: String) = false
         })
+
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        // We're doing this because we drop our binding reference before onDestroy()
+        mapView = binding.mapView
     }
 
     override fun onDestroyView() {
@@ -894,6 +907,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         // we need to save it here instead.
         mapViewModel.mapInstanceState.clear()
         mapView.onSaveInstanceState(mapViewModel.mapInstanceState)
+        _binding = null
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -933,12 +947,12 @@ class MapFragment : Fragment(R.layout.fragment_map) {
 
     override fun onPause() {
         super.onPause()
-        map_view.onPause()
+        binding.mapView.onPause()
     }
 
     override fun onResume() {
         super.onResume()
-        map_view.onResume()
+        binding.mapView.onResume()
     }
 
     override fun onStop() {
@@ -946,17 +960,20 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         // Don't resize or move anything when the keyboard appears.
         // Most importantly, this prevents the soft keyboard from causing the map to resize.
         requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_UNSPECIFIED)
-        map_view.onStop()
+        binding.mapView.onStop()
     }
 
     override fun onStart() {
         super.onStart()
         requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
-        map_view.onStart()
+        binding.mapView.onStart()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        // FIXME: Mapbox says this should be called from Fragment#onDestroyView() instead, but that
+        //  causes the app to crash due to something else it appears we're doing wrong.
+        //  If we fix this, it removes the need to keep an extra field for it.
         mapView.onDestroy()
     }
 

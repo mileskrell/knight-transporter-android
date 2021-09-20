@@ -6,9 +6,11 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.mapbox.android.core.permissions.PermissionsManager
-import kotlinx.android.synthetic.main.activity_main.*
+import edu.rutgers.knighttransporter.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity(R.layout.activity_main) {
+class MainActivity : AppCompatActivity() {
+
+    lateinit var binding: ActivityMainBinding
 
     lateinit var navController: NavController
 
@@ -16,7 +18,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setSupportActionBar(toolbar)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
 
         navController = findNavController(R.id.nav_host_fragment)
         setupActionBarWithNavController(navController)
@@ -25,10 +29,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
     override fun onSupportNavigateUp() = navController.navigateUp() || super.onSupportNavigateUp()
 
     override fun onBackPressed() {
-        if (search_view.isSearchOpen) {
-            search_view.closeSearch()
+        if (binding.searchView.isSearchOpen) {
+            binding.searchView.closeSearch()
         } else {
-            val f = nav_host_fragment.childFragmentManager.primaryNavigationFragment
+            val f = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)?.childFragmentManager?.primaryNavigationFragment
             if (f !is MapFragment || !f.clearSelectedPlace()) {
                 // If we didn't deselect anything, perform the default back button action
                 super.onBackPressed()

@@ -3,7 +3,9 @@ package edu.rutgers.knighttransporter.bottom_sheets
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.DisplayMetrics
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -20,15 +22,15 @@ import com.mapbox.geojson.Feature
 import edu.rutgers.knighttransporter.MapViewModel
 import edu.rutgers.knighttransporter.R
 import edu.rutgers.knighttransporter.createRutgersMarkwon
+import edu.rutgers.knighttransporter.databinding.FragmentPlaceSheetBuildingBinding
 import edu.rutgers.knighttransporter.feature_stuff.*
-import kotlinx.android.synthetic.main.fragment_place_sheet_building.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.min
 
-class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
+class BuildingFragment : Fragment() {
     companion object {
         @JvmStatic
         fun newInstance(feature: String) =
@@ -50,20 +52,27 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val binding = FragmentPlaceSheetBuildingBinding.inflate(inflater, container, false)
+
         val markwon = createRutgersMarkwon(requireContext())
 
         building.getStringProperty(BUILDING_NAME).let { buildingName ->
-            place_sheet_building_name.text = buildingName
-            place_sheet_building_image.contentDescription = "Photo of $buildingName"
+            binding.placeSheetBuildingName.text = buildingName
+            binding.placeSheetBuildingImage.contentDescription = "Photo of $buildingName"
         }
 
         val buildingNumber = building.getNumberProperty(BUILDING_NUMBER).toInt()
 
-        place_sheet_building_number.text = "Building number: $buildingNumber"
+        binding.placeSheetBuildingNumber.text = "Building number: $buildingNumber"
 
-        place_sheet_building_address.text = "${building.getStringProperty(BUILDING_ADDRESS)}\n" +
-                "${building.getStringProperty(CITY)}, ${building.getStringProperty(STATE)}"
+        binding.placeSheetBuildingAddress.text =
+            "${building.getStringProperty(BUILDING_ADDRESS)}\n" +
+                    "${building.getStringProperty(CITY)}, ${building.getStringProperty(STATE)}"
 
         val progressDrawable = CircularProgressDrawable(requireContext()).apply {
             setStyle(CircularProgressDrawable.LARGE)
@@ -90,13 +99,14 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
                     // TODO: Surely there's a cleaner way to check this
                     if (e?.message?.contains("FileNotFound") == true) {
                         // e.g. building 3519
-                        place_sheet_building_image_error.text = getString(R.string.no_photo_found)
+                        binding.placeSheetBuildingImageError.text =
+                            getString(R.string.no_photo_found)
                     } else {
-                        place_sheet_building_image_error.text =
+                        binding.placeSheetBuildingImageError.text =
                             getString(R.string.error_loading_photo)
                     }
-                    place_sheet_building_image.visibility = View.INVISIBLE
-                    place_sheet_building_image_error.visibility = View.VISIBLE
+                    binding.placeSheetBuildingImage.visibility = View.INVISIBLE
+                    binding.placeSheetBuildingImageError.visibility = View.VISIBLE
                     return false
                 }
 
@@ -108,7 +118,7 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
                     isFirstResource: Boolean
                 ): Boolean {
                     if (resource != null) {
-                        place_sheet_building_image.setOnClickListener {
+                        binding.placeSheetBuildingImage.setOnClickListener {
                             AlertDialog.Builder(requireContext())
                                 .setView(R.layout.dialog_photo)
                                 .setNeutralButton(R.string.close) { _, _ -> }
@@ -122,7 +132,7 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
                     return false
                 }
             })
-            .into(place_sheet_building_image)
+            .into(binding.placeSheetBuildingImage)
 
         // TODO: If these fail due to lack of an Internet connection,
         //  we should automatically retry them when possible.
@@ -140,19 +150,19 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
             }
 
             if (arcGISDetails?.alertLinks != null) {
-                place_sheet_building_alert.run {
+                binding.placeSheetBuildingAlert.run {
                     autoLinkMarkwon.setMarkdown(this, "**Alert:** ${arcGISDetails.alertLinks}")
                     visibility = View.VISIBLE
                 }
             }
             if (arcGISDetails?.description != null) {
-                place_sheet_building_description.run {
+                binding.placeSheetBuildingDescription.run {
                     autoLinkMarkwon.setMarkdown(this, arcGISDetails.description)
                     visibility = View.VISIBLE
                 }
             }
             if (arcGISDetails?.website?.isNotBlank() == true) { // there's >600 null, >100 blank
-                place_sheet_building_website.run {
+                binding.placeSheetBuildingWebsite.run {
                     markwon.setMarkdown(this, "**Website:** <${arcGISDetails.website}>")
                     visibility = View.VISIBLE
                 }
@@ -173,14 +183,16 @@ class BuildingFragment : Fragment(R.layout.fragment_place_sheet_building) {
             if (!cloudStorageDetails.departments.isNullOrEmpty()) {
                 val departmentsList =
                     cloudStorageDetails.departments.joinToString(prefix = "- ", separator = "\n- ")
-                place_sheet_building_departments.run {
+                binding.placeSheetBuildingDepartments.run {
                     // TODO: Occasional crash - fragment not attached to a context, and then the
                     //  call to setMarkdown makes it crash
                     markwon.setMarkdown(this, "### Departments\n$departmentsList")
                     visibility = View.VISIBLE
                 }
             }
-            place_sheet_building_address.append(" ${cloudStorageDetails.zip}")
+            binding.placeSheetBuildingAddress.append(" ${cloudStorageDetails.zip}")
         }
+
+        return binding.root
     }
 }
