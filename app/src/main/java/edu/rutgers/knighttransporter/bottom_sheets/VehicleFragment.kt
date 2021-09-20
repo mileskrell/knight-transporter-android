@@ -11,16 +11,6 @@ import edu.rutgers.knighttransporter.feature_stuff.ROUTE_NAME
 import edu.rutgers.knighttransporter.feature_stuff.VEHICLE_ID
 
 class VehicleFragment : Fragment() {
-    companion object {
-        @JvmStatic
-        fun newInstance(feature: String) =
-            VehicleFragment()
-                .apply {
-                    arguments = Bundle().apply {
-                        putString(ARG_FEATURE, feature)
-                    }
-                }
-    }
 
     private lateinit var vehicleFeature: Feature
 
@@ -43,5 +33,16 @@ class VehicleFragment : Fragment() {
             "Vehicle ID: ${vehicleFeature.getNumberProperty(VEHICLE_ID).toInt()}"
 
         return binding.root
+    }
+
+    companion object {
+        @JvmStatic
+        fun newInstance(feature: String) =
+            VehicleFragment()
+                .apply {
+                    arguments = Bundle().apply {
+                        putString(ARG_FEATURE, feature)
+                    }
+                }
     }
 }

@@ -53,34 +53,6 @@ class MapFragment : Fragment() {
     private var _binding: FragmentMapBinding? = null
     private val binding get() = _binding!!
 
-    companion object {
-        const val MIN_ZOOM = 7.0
-        const val LAT_NORTH = 41.36
-        const val LNG_EAST = -73.89
-        const val LAT_SOUTH = 38.92
-        const val LNG_WEST = -75.56
-        const val WALKWAYS_SOURCE = "rWalkways-source"
-        const val WALKWAYS_LAYER = "rWalkways-layer"
-        const val ROUTES_SOURCE = "rRoutes-source"
-        const val ROUTES_LAYER = "rRoutes-layer"
-        const val PARKING_LOTS_SOURCE = "rParkingLots-source"
-        const val PARKING_LOTS_LAYER = "rParkingLots-layer"
-        const val BUILDINGS_SOURCE = "rBuildings-source"
-        const val BUILDINGS_LAYER = "rBuildings-layer"
-        const val POPULAR_DESTINATIONS_SOURCE = "rPopular-destinations-source"
-        const val POPULAR_DESTINATIONS_LAYER = "rPopular-destinations-layer"
-        const val STOPS_SOURCE = "rStops-source"
-        const val STOPS_LAYER = "rStops-layer"
-        const val VEHICLES_SOURCE = "rVehicles-source"
-        const val VEHICLES_LAYER = "rVehicles-layer"
-        const val SELECTED_PLACE_SOURCE = "rSelectedPlace-source"
-        const val SELECTED_PLACE_LAYER = "rSelectedPlace-layer"
-        const val RUTGERS_BUS_ICON = "rutgers-bus-icon"
-        const val RUTGERS_STOP_ICON = "rutgers-stop-icon"
-        const val RUTGERS_STOP_ICON_SELECTED = "rutgers-stop-icon-selected"
-        const val BOTTOM_SHEET_FRAGMENT = "bottom sheet fragment"
-    }
-
     private val searchView: MaterialSearchView
         get() = (requireActivity() as MainActivity).binding.searchView
 
@@ -972,5 +944,33 @@ class MapFragment : Fragment() {
         super.onSaveInstanceState(outState)
         // Idk if this is necessary, since I'm already saving the state in onDestroyView()
         binding.mapView.onSaveInstanceState(outState)
+    }
+
+    companion object {
+        const val MIN_ZOOM = 7.0
+        const val LAT_NORTH = 41.36
+        const val LNG_EAST = -73.89
+        const val LAT_SOUTH = 38.92
+        const val LNG_WEST = -75.56
+        const val WALKWAYS_SOURCE = "rWalkways-source"
+        const val WALKWAYS_LAYER = "rWalkways-layer"
+        const val ROUTES_SOURCE = "rRoutes-source"
+        const val ROUTES_LAYER = "rRoutes-layer"
+        const val PARKING_LOTS_SOURCE = "rParkingLots-source"
+        const val PARKING_LOTS_LAYER = "rParkingLots-layer"
+        const val BUILDINGS_SOURCE = "rBuildings-source"
+        const val BUILDINGS_LAYER = "rBuildings-layer"
+        const val POPULAR_DESTINATIONS_SOURCE = "rPopular-destinations-source"
+        const val POPULAR_DESTINATIONS_LAYER = "rPopular-destinations-layer"
+        const val STOPS_SOURCE = "rStops-source"
+        const val STOPS_LAYER = "rStops-layer"
+        const val VEHICLES_SOURCE = "rVehicles-source"
+        const val VEHICLES_LAYER = "rVehicles-layer"
+        const val SELECTED_PLACE_SOURCE = "rSelectedPlace-source"
+        const val SELECTED_PLACE_LAYER = "rSelectedPlace-layer"
+        const val RUTGERS_BUS_ICON = "rutgers-bus-icon"
+        const val RUTGERS_STOP_ICON = "rutgers-stop-icon"
+        const val RUTGERS_STOP_ICON_SELECTED = "rutgers-stop-icon-selected"
+        const val BOTTOM_SHEET_FRAGMENT = "bottom sheet fragment"
     }
 }

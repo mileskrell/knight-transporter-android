@@ -13,10 +13,6 @@ import java.util.*
 class RoutesAdapter(private var stopMarkerData: StopMarkerData) :
     RecyclerView.Adapter<RoutesAdapter.RouteViewHolder>() {
 
-    companion object {
-        const val TAG = "RoutesAdapter"
-    }
-
     fun updateStopMarkerData(newStopMarkerData: StopMarkerData) {
         stopMarkerData = newStopMarkerData
         notifyDataSetChanged()
@@ -57,4 +53,8 @@ class RoutesAdapter(private var stopMarkerData: StopMarkerData) :
     }
 
     class RouteViewHolder(val binding: RouteItemBinding) : RecyclerView.ViewHolder(binding.root)
+
+    companion object {
+        const val TAG = "RoutesAdapter"
+    }
 }

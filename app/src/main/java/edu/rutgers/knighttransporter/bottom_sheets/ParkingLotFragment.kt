@@ -13,16 +13,6 @@ import edu.rutgers.knighttransporter.feature_stuff.LOT_NAME
 import edu.rutgers.knighttransporter.feature_stuff.WEBSITE
 
 class ParkingLotFragment : Fragment() {
-    companion object {
-        @JvmStatic
-        fun newInstance(feature: String) =
-            ParkingLotFragment()
-                .apply {
-                    arguments = Bundle().apply {
-                        putString(ARG_FEATURE, feature)
-                    }
-                }
-    }
 
     private lateinit var feature: Feature
 
@@ -52,5 +42,16 @@ class ParkingLotFragment : Fragment() {
         markwon.setMarkdown(binding.placeSheetParkingLotContact, contactText)
 
         return binding.root
+    }
+
+    companion object {
+        @JvmStatic
+        fun newInstance(feature: String) =
+            ParkingLotFragment()
+                .apply {
+                    arguments = Bundle().apply {
+                        putString(ARG_FEATURE, feature)
+                    }
+                }
     }
 }

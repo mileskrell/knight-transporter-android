@@ -17,18 +17,6 @@ import edu.rutgers.knighttransporter.feature_stuff.STOP_MARKER_DATA_JSON
 import edu.rutgers.knighttransporter.for_transloc.StopMarkerData
 
 class StopFragment : Fragment() {
-    companion object {
-        const val TAG = "StopFragment"
-
-        @JvmStatic
-        fun newInstance(feature: String) =
-            StopFragment()
-                .apply {
-                    arguments = Bundle().apply {
-                        putString(ARG_FEATURE, feature)
-                    }
-                }
-    }
 
     private lateinit var initialFeature: Feature
     private lateinit var initialStopMarkerData: StopMarkerData
@@ -81,5 +69,18 @@ class StopFragment : Fragment() {
         super.onPause()
         mapViewModel.stopIdToMarkerDataMap.removeObserver(stopMarkersObserver)
         Log.d(TAG, "Removed observer in bottom sheet for stop ${initialStopMarkerData.stop.name}")
+    }
+
+    companion object {
+        const val TAG = "StopFragment"
+
+        @JvmStatic
+        fun newInstance(feature: String) =
+            StopFragment()
+                .apply {
+                    arguments = Bundle().apply {
+                        putString(ARG_FEATURE, feature)
+                    }
+                }
     }
 }

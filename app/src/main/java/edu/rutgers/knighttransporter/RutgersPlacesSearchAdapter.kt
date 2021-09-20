@@ -38,10 +38,6 @@ class RutgersPlacesSearchAdapter(
         )
     }
 
-    companion object {
-        const val MAX_SUGGESTIONS = 5
-    }
-
     override fun getFilter(): Filter = object : Filter() {
         override fun performFiltering(constraint: CharSequence?): FilterResults {
             if (constraint.isNullOrBlank()) {
@@ -123,5 +119,9 @@ class RutgersPlacesSearchAdapter(
     private inner class SuggestionsViewHolder(convertView: View) {
         val textView: TextView = convertView.findViewById(R.id.suggestion_text)
         val imageView: ImageView = convertView.findViewById(R.id.suggestion_icon)
+    }
+
+    companion object {
+        const val MAX_SUGGESTIONS = 5
     }
 }

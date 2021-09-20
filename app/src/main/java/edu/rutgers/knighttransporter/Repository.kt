@@ -18,9 +18,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 
 class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
-    companion object {
-        const val TAG = "Repository"
-    }
 
     private var walkways: FeatureCollection? = null
     private var routePolylines: FeatureCollection? = null
@@ -186,4 +183,8 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
 
     suspend fun getBuildingCloudStorageDetails(buildingNumber: Int) =
         rutgersCloudStorageService.getBuildingCloudStorageDetails(buildingNumber)
+
+    companion object {
+        const val TAG = "Repository"
+    }
 }

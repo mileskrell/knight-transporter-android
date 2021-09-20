@@ -31,16 +31,6 @@ import kotlinx.coroutines.withContext
 import kotlin.math.min
 
 class BuildingFragment : Fragment() {
-    companion object {
-        @JvmStatic
-        fun newInstance(feature: String) =
-            BuildingFragment()
-                .apply {
-                    arguments = Bundle().apply {
-                        putString(ARG_FEATURE, feature)
-                    }
-                }
-    }
 
     private lateinit var building: Feature
     val mapViewModel: MapViewModel by activityViewModels()
@@ -194,5 +184,16 @@ class BuildingFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    companion object {
+        @JvmStatic
+        fun newInstance(feature: String) =
+            BuildingFragment()
+                .apply {
+                    arguments = Bundle().apply {
+                        putString(ARG_FEATURE, feature)
+                    }
+                }
     }
 }
