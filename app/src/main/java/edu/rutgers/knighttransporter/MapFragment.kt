@@ -942,7 +942,6 @@ class MapFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        // Idk if this is necessary, since I'm already saving the state in onDestroyView()
         binding.mapView.onSaveInstanceState(outState)
     }
 
