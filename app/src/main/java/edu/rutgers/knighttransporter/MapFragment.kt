@@ -17,7 +17,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.Gson
-import com.leinardi.android.speeddial.SpeedDialView
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.android.gestures.MoveGestureDetector
@@ -65,8 +64,6 @@ class MapFragment : Fragment() {
     private var parkingLayer: FillLayer? = null
     private var buildingLayer: FillLayer? = null
     private var popularDestinationsLayer: SymbolLayer? = null
-
-    private var speedDialWasClosedBecauseSearchViewWasOpened = false
 
     private val permissionsManager = PermissionsManager(object : PermissionsListener {
         override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
@@ -254,10 +251,7 @@ class MapFragment : Fragment() {
         binding.mapView.getMapAsync { mapboxMap ->
             this.mapboxMap = mapboxMap
             mapboxMap.addOnMoveListener(object : MapboxMap.OnMoveListener {
-                override fun onMoveBegin(detector: MoveGestureDetector) {
-                    binding.routesSpeedDial.close()
-                }
-
+                override fun onMoveBegin(detector: MoveGestureDetector) {}
                 override fun onMove(detector: MoveGestureDetector) {}
                 override fun onMoveEnd(detector: MoveGestureDetector) {
                     // The part of the feature that gets selected is related to what part is visible
@@ -346,7 +340,6 @@ class MapFragment : Fragment() {
                     false // Use colors from drawable
                 )
                 mapboxMap.addOnMapClickListener { latLng ->
-                    binding.routesSpeedDial.close()
                     searchView.closeSearch()
                     val point = mapboxMap.projection.toScreenLocation(latLng)
 
@@ -823,34 +816,6 @@ class MapFragment : Fragment() {
                 style.removeLayer("transit-label")
             }
         }
-        binding.routesSpeedDial.inflate(R.menu.routes_speed_dial_menu)
-        binding.routesSpeedDial.setOnChangeListener(object : SpeedDialView.OnChangeListener {
-            override fun onMainActionSelected() = false
-
-            override fun onToggleChanged(isOpen: Boolean) {
-                // Normally, we close the search when the speed dial is tapped. But we also close
-                // the speed dial when we open the search, and if that's why this method was called,
-                // then we shouldn't close the search.
-                if (isOpen || !speedDialWasClosedBecauseSearchViewWasOpened) {
-                    searchView.closeSearch()
-                }
-
-                speedDialWasClosedBecauseSearchViewWasOpened = false
-            }
-        })
-        binding.routesSpeedDial.setOnActionSelectedListener {
-            Toast.makeText(context, "You tapped a route", Toast.LENGTH_SHORT).show()
-            false
-        }
-
-        searchView.setOnSearchViewListener(object : MaterialSearchView.SearchViewListener {
-            override fun onSearchViewClosed() {}
-
-            override fun onSearchViewShown() {
-                speedDialWasClosedBecauseSearchViewWasOpened = true
-                binding.routesSpeedDial.close()
-            }
-        })
 
         // TODO: When you tap the search box, any old suggestions reappear. Make this not happen.
         searchView.setOnQueryTextListener(object : MaterialSearchView.OnQueryTextListener {
