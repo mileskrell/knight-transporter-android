@@ -2,6 +2,7 @@ package edu.rutgers.knighttransporter
 
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.mapbox.geojson.FeatureCollection
@@ -9,6 +10,7 @@ import edu.rutgers.knighttransporter.bottom_sheets.BuildingArcGISDetailsFeatureC
 import edu.rutgers.knighttransporter.bottom_sheets.BuildingArcGISDetailsFeatureCollection.Feature.BuildingArcGISDetails
 import edu.rutgers.knighttransporter.bottom_sheets.RutgersCloudStorageService
 import edu.rutgers.knighttransporter.feature_stuff.*
+import edu.rutgers.knighttransporter.for_transloc.Alert
 import edu.rutgers.knighttransporter.for_transloc.Route
 import io.socket.client.IO
 import io.socket.client.Socket
@@ -17,7 +19,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 
-class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
+class Repository(
+    val _routes: MutableLiveData<List<Route>>,
+    val _alerts: MutableLiveData<List<Alert>>
+) {
 
     private var walkways: FeatureCollection? = null
     private var routePolylines: FeatureCollection? = null
@@ -74,7 +79,14 @@ class Repository(val onRoutesUpdated: (routes: List<Route>) -> Unit) {
                 (it[0] as JSONArray).toString(),
                 object : TypeToken<List<Route>>() {}.type
             )
-            onRoutesUpdated(routes)
+            _routes.postValue(routes)
+        }.on("alerts") {
+            Log.d(TAG, "Socket.IO: Received alerts")
+            val alerts = Gson().fromJson<List<Alert>>(
+                (it[0] as JSONArray).toString(),
+                object : TypeToken<List<Alert>>() {}.type
+            )
+            _alerts.postValue(alerts)
         }
     }
 

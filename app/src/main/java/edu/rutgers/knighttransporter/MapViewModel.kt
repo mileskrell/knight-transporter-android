@@ -11,6 +11,7 @@ import androidx.preference.PreferenceManager
 import com.mapbox.geojson.Feature
 import com.mapbox.mapboxsdk.geometry.LatLng
 import edu.rutgers.knighttransporter.feature_stuff.PlaceType
+import edu.rutgers.knighttransporter.for_transloc.Alert
 import edu.rutgers.knighttransporter.for_transloc.Route
 import edu.rutgers.knighttransporter.for_transloc.StopMarkerData
 
@@ -18,6 +19,10 @@ class MapViewModel(app: Application) : AndroidViewModel(app) {
     private val _routes = MutableLiveData<List<Route>>(emptyList())
     val routes: LiveData<List<Route>>
         get() = _routes
+
+    private val _alerts = MutableLiveData<List<Alert>>(emptyList())
+    val alerts: LiveData<List<Alert>>
+        get() = _alerts
 
     private val sharedPreferences: SharedPreferences =
         PreferenceManager.getDefaultSharedPreferences(app.applicationContext)
@@ -45,9 +50,7 @@ class MapViewModel(app: Application) : AndroidViewModel(app) {
     // This lets us cancel the vehicle animations if we get new data before they finish
     var vehiclesAnimatorSet = AnimatorSet()
 
-    private val repository = Repository { newRoutes ->
-        _routes.postValue(newRoutes)
-    }
+    private val repository = Repository(_routes, _alerts)
 
     val mapInstanceState = Bundle()
 

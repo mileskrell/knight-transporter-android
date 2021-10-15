@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.core.animation.addListener
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commitNow
@@ -638,6 +639,16 @@ class MapFragment : Fragment() {
                         // If there *is* a new vehicle to animate to, that's handled where we handle
                         // the other vehicle animations.
                     }
+                }
+
+                mapViewModel.alerts.observe({ lifecycle }) { alerts ->
+                    // TODO: Use show() and hide() instead
+                    binding.fabAlerts.isVisible = alerts.isNotEmpty()
+                }
+
+                binding.fabAlerts.setOnClickListener {
+                    AlertsDialogFragment.newInstance(mapViewModel.alerts.value ?: listOf())
+                        .show(parentFragmentManager, null)
                 }
 
                 mapViewModel.viewModelScope.launch(CoroutineExceptionHandler { _, _ ->
