@@ -479,7 +479,10 @@ class MapFragment : Fragment() {
                                 Feature.fromGeometry(
                                     Point.fromLngLat(vehicle.location.lng, vehicle.location.lat)
                                 ).apply {
-                                    addStringProperty(ROUTE_NAME, route.longName)
+                                    addStringProperty(
+                                        ROUTE_NAME,
+                                        route.shortName.ifBlank { route.longName }
+                                    )
                                     addNumberProperty(VEHICLE_ID, vehicle.vehicleId)
                                     addNumberProperty(HEADING, vehicle.heading)
                                     addStringProperty(COLOR, "#${route.color}")

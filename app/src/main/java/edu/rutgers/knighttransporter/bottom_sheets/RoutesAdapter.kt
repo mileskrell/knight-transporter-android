@@ -27,7 +27,9 @@ class RoutesAdapter(private var stopMarkerData: StopMarkerData) :
 
     override fun onBindViewHolder(holder: RouteViewHolder, position: Int) {
         holder.binding.routeItemRouteName.run {
-            text = stopMarkerData.associatedRoutes[position].longName
+            text = with(stopMarkerData.associatedRoutes[position]) {
+                shortName.ifBlank { longName }
+            }
             setTextColor(Color.parseColor("#${stopMarkerData.associatedRoutes[position].color}"))
         }
 
